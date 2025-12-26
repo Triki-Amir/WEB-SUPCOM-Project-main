@@ -50,12 +50,12 @@ WEB-SUPCOM-Project/
 │   ├── Guidelines.md               # Coding guidelines
 │   └── Attributions.md             # Credits and attributions
 │
-├── Configuration/                  # Global configuration
-│   ├── .env                        # Environment variables
-│   ├── index.html                  # Vite HTML entry point
-│   ├── package.json                # Root dependencies & scripts
-│   └── vite.config.ts              # Vite configuration
+├── Configuration/                  # Configuration guide
+│   └── README.md                   # Guide to all configuration files
 │
+├── index.html                      # Vite HTML entry point
+├── package.json                    # Frontend dependencies & scripts
+├── vite.config.ts                  # Vite build configuration
 └── README.md                       # Global project overview
 ```
 

@@ -244,13 +244,13 @@ WEB-SUPCOM-Project/
 │   ├── Guidelines.md               # Coding guidelines
 │   └── Attributions.md             # Credits and attributions
 │
-├── Configuration/                  # Global configuration
-│   ├── .env                        # Environment variables (not tracked)
-│   ├── index.html                  # Vite HTML entry point
-│   ├── package.json                # Dependencies & scripts
-│   ├── vite.config.ts              # Vite configuration
-│   └── tsconfig.json               # TypeScript configuration
+├── Configuration/                  # Configuration guide
+│   └── README.md                   # Guide to all configuration files
 │
+├── index.html                      # Vite HTML entry point (root level)
+├── package.json                    # Frontend dependencies (root level)
+├── vite.config.ts                  # Vite configuration (root level)
+├── tsconfig.json                   # TypeScript config (root level)
 └── README.md                       # Global project overview (this file)
 ```
 
@@ -258,7 +258,8 @@ WEB-SUPCOM-Project/
 - `/backend` - Tout le code backend (API, base de données)
 - `/src` - Tout le code frontend (composants React, services)
 - `/Documentation` - Toute la documentation du projet
-- `/Configuration` - Tous les fichiers de configuration
+- `/Configuration` - Guide des fichiers de configuration (les fichiers réels sont à la racine)
+- Racine du projet - Fichiers de configuration (package.json, vite.config.ts, etc.)
 
 ## 📚 Documentation
 
