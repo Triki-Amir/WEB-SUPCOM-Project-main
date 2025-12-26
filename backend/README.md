@@ -58,6 +58,7 @@ backend/
 - Node.js 18+ installed
 - PostgreSQL 14+ installed and running
 - npm or yarn package manager
+- [Docker](https://www.docker.com/products/docker-desktop) and Docker Compose installed on your machine.
 
 ### Installation
 
@@ -73,26 +74,76 @@ backend/
 
 3. **Edit `.env` with your database credentials:**
    ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/car_rental"
-   JWT_SECRET="your-secret-key"
+   # .env file for backend
+
+   # Database Configuration
+   # This URL points to the PostgreSQL container defined in docker-compose.yml
+   DATABASE_URL="postgresql://postgres@localhost:5432/car_rental_db"
+
+   # Server Configuration
    PORT=5000
-   NODE_ENV=development
+
+   # JWT Configuration
+   JWT_SECRET="your_super_secret_jwt_key_that_should_be_changed"
+   JWT_EXPIRY="7d"
+
+   # CORS Configuration
+   CORS_ORIGIN="http://localhost:5173"
    ```
 
-4. **Generate Prisma client:**
+   **Note:** The `DATABASE_URL` is pre-configured to connect to the Docker container. You do not need to change it for local development.
+
+4. **Start the PostgreSQL Database
+
+   The project uses Docker to run a PostgreSQL database.
+
+   1.  Open a terminal in the **root directory** of the project (the one containing `docker-compose.yml`).
+   2.  Run the following command to start the database container in the background:
+
    ```bash
-   npm run prisma:generate
+   docker-compose up -d
    ```
 
-5. **Run database migrations:**
+   To verify the container is running, use `docker-compose ps`. You should see `car-rental-db` with a status of `Up`.
+
+5. **Create Database Tables**
+
+   With the database running, you can now create the tables from your Prisma schema.
+
+   1.  Navigate to the `backend` directory in your terminal.
+   2.  Install the necessary Node.js packages:
+
+       ```bash
+       npm install
+       ```
+
+   3.  Run the Prisma command to create the tables:
+
+       ```bash
+       npx prisma db push
+       ```
+
+       This command reads your `prisma/schema.prisma` file and creates the corresponding tables in the database. You should see a message confirming that your database is now in sync with your schema.
+
+6. **(Optional) Seed the Database**
+
+   If you want to populate your database with initial data, you can run the seed script.
+
    ```bash
-   npm run prisma:migrate
+   npx prisma db seed
    ```
 
-6. **Seed the database (optional):**
+   **Note:** You must first create a seed script at `prisma/seed.ts` for this command to work.
+
+7. **Start the Backend Server**
+
+   You are now ready to start the backend application.
+
    ```bash
-   npm run prisma:seed
+   npm run dev
    ```
+
+   The server will start on `http://localhost:5000` (or the port specified in your `.env` file).
 
 ### Running the Server
 

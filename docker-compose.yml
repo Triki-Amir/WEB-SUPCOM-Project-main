@@ -1,0 +1,31 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: car-rental-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: car_rental_db
+      # Trust all connections for local development
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist data even if container is stopped
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - car-rental-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  car-rental-network:
+    driver: bridge

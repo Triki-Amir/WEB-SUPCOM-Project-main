@@ -1,0 +1,2 @@
+-- Simple initialization - no SQL needed yet as tables will be created by Prisma
+-- This file can remain empty
