@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #006D77;
+  --accent: #83C5BE;
+}
+
+body { @apply bg-[#f8f9fa]; }
