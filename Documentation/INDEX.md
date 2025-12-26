@@ -10,6 +10,9 @@ Main documentation guide - Getting started, installation, and usage instructions
 ### [ARCHITECTURE.md](./ARCHITECTURE.md)
 System architecture overview - Detailed explanation of the project structure, components, and technical decisions.
 
+### [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)
+Visual project structure guide - Directory tree, file organization, and navigation help.
+
 ## 🏗️ Architecture & Design
 
 ### [architecture_frontend.md](./architecture_frontend.md)
@@ -51,6 +54,7 @@ All documentation files are organized in the `/Documentation` directory for easy
 
 ### Architecture & Design
 - [System Architecture](./ARCHITECTURE.md) - Understand the system design
+- [Project Structure](./PROJECT_STRUCTURE.md) - Navigate the codebase
 - [Frontend Architecture](./architecture_frontend.md) - Frontend-specific details
 - [Theme Selection](./justification_du_choix_du_theme.md) - Design decisions
 

@@ -21,6 +21,20 @@ npm run dev          # Runs on http://localhost:5000
 npm run dev          # Runs on http://localhost:3000
 ```
 
+## 📂 Structure du Projet
+
+Le projet est organisé de manière claire et logique:
+
+```
+WEB-SUPCOM-Project/
+├── 📁 backend/          # API Backend (Express + Prisma)
+├── 📁 src/              # Application Frontend (React)
+├── 📁 Documentation/    # Toute la documentation
+└── 📁 Configuration/    # Guide de configuration
+```
+
+**Pour plus de détails:** Consultez [PROJECT_STRUCTURE.md](./Documentation/PROJECT_STRUCTURE.md)
+
 ## 📋 Table des matières
 
 - [Fonctionnalités](#-fonctionnalités)
