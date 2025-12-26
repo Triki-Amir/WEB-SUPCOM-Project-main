@@ -1,28 +1,51 @@
 # 🚗 Auto Fleet - Système de Location de Véhicules
 
-# Car Rental with Tracking
-
 Application web moderne de gestion de location de véhicules en Tunisie, construite avec React, Node.js, Express, Prisma et PostgreSQL.
-
 
 ![Tech Stack](./src/assets/651c45b1865c51f174a583211861ca76520c7033.png)
 
-## Running the code
+## 🚀 Quick Start
+
+```bash
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Start backend (in backend directory)
+npm run dev          # Runs on http://localhost:5000
+
+# Start frontend (in root directory)
+npm run dev          # Runs on http://localhost:3000
+```
+
+📖 **Detailed guide:** [QUICKSTART.md](./Documentation/QUICKSTART.md)
+
+## 📂 Structure du Projet
+
+Le projet est organisé de manière claire et logique:
+
+```
+WEB-SUPCOM-Project/
+├── 📁 backend/          # API Backend (Express + Prisma)
+├── 📁 src/              # Application Frontend (React)
+├── 📁 Documentation/    # Toute la documentation
+└── 📁 Configuration/    # Guide de configuration
+```
+
+**Pour plus de détails:** Consultez [PROJECT_STRUCTURE.md](./Documentation/PROJECT_STRUCTURE.md)
 
 ## 📋 Table des matières
 
-Run `npm i` to install the dependencies.
-
 - [Fonctionnalités](#-fonctionnalités)
-
-- [Technologies utilisées](#️-technologies-utilisées) Run `npm run dev` to start the development server.
-
+- [Technologies utilisées](#️-technologies-utilisées)
 - [Prérequis](#-prérequis)
 - [Installation](#-installation)
 - [Configuration](#️-configuration)
-- [Utilisation](#-utilisation)
 - [Structure du projet](#-structure-du-projet)
-- [API Endpoints](#-api-endpoints)
+- [Documentation](#-documentation)
 - [Comptes de test](#-comptes-de-test)
 
 ## ✨ Fonctionnalités
@@ -194,72 +217,88 @@ npm run prisma:studio
 ## 📁 Structure du projet
 
 ```
-car rental/
-├── src/                          # Frontend React
-│   ├── components/
-│   │   ├── admin/               # Composants admin
-│   │   ├── auth/                # Authentification
-│   │   ├── client/              # Composants client
-│   │   ├── direction/           # Composants direction
-│   │   ├── ui/                  # Composants UI réutilisables
-│   │   └── ...                  # Autres composants
-│   ├── contexts/                # Contextes React (Auth, etc.)
-│   ├── assets/                  # Images et ressources
-│   └── styles/                  # Styles globaux
+WEB-SUPCOM-Project/
 │
-├── backend/                      # Backend Node.js/Express
-│   ├── prisma/
-│   │   ├── schema.prisma        # Schéma de la base de données
-│   │   └── seed.ts              # Script de seed
-│   ├── src/
-│   │   ├── routes/              # Routes API
-│   │   ├── middleware/          # Middlewares (auth, etc.)
-│   │   └── server.ts            # Point d'entrée du serveur
-│   ├── .env                     # Variables d'environnement
-│   └── package.json
+├── backend/                         # Backend (API)
+│   ├── src/                         # Backend source code (Express)
+│   │   ├── routes/                 # API route handlers
+│   │   ├── middleware/             # Express middleware (auth, validation)
+│   │   ├── server.ts               # Express server setup
+│   │   └── index.ts                # Application entry point
+│   ├── prisma/                      # Prisma schema & database seed
+│   │   ├── schema.prisma           # Database schema definition
+│   │   └── seed.ts                 # Database seeding script
+│   ├── package.json                # Backend dependencies
+│   └── README.md                   # Backend documentation
 │
-├── package.json                  # Dépendances frontend
-├── tsconfig.json                 # Configuration TypeScript
-├── vite.config.ts                # Configuration Vite
-└── README.md
+├── src/                             # Frontend (React – single app)
+│   ├── components/                 # UI components (admin, client, shared)
+│   │   ├── admin/                  # Admin dashboard components
+│   │   ├── client/                 # Client dashboard components
+│   │   ├── direction/              # Direction dashboard components
+│   │   ├── auth/                   # Authentication components
+│   │   ├── ui/                     # Shared UI components
+│   │   └── *.tsx                   # Other shared components
+│   ├── contexts/                   # React Contexts (AuthContext, etc.)
+│   │   └── AuthContext.tsx         # Authentication state management
+│   ├── services/                   # API services (api.ts, requests)
+│   │   └── api.ts                  # Centralized API client
+│   ├── assets/                     # Static assets (images, icons)
+│   ├── styles/                     # Global styles
+│   ├── App.tsx                     # Root application component
+│   ├── main.tsx                    # React entry point
+│   └── README.md                   # Frontend documentation
+│
+├── Documentation/                  # Project documentation
+│   ├── INDEX.md                    # Navigation / table of contents
+│   ├── ARCHITECTURE.md             # System architecture
+│   ├── README.md                   # Main documentation guide
+│   ├── architecture_frontend.md    # Frontend architecture details
+│   ├── figma_import_steps.md       # Design import workflow
+│   ├── justification_du_choix_du_theme.md  # Theme selection
+│   ├── README_DEVELOPMENT.md       # Development setup guide
+│   ├── Guidelines.md               # Coding guidelines
+│   └── Attributions.md             # Credits and attributions
+│
+├── Configuration/                  # Configuration guide
+│   └── README.md                   # Guide to all configuration files
+│
+├── index.html                      # Vite HTML entry point (root level)
+├── package.json                    # Frontend dependencies (root level)
+├── vite.config.ts                  # Vite configuration (root level)
+├── tsconfig.json                   # TypeScript config (root level)
+└── README.md                       # Global project overview (this file)
 ```
+
+**Navigation simplifiée:**
+- `/backend` - Tout le code backend (API, base de données)
+- `/src` - Tout le code frontend (composants React, services)
+- `/Documentation` - Toute la documentation du projet
+- `/Configuration` - Guide des fichiers de configuration (les fichiers réels sont à la racine)
+- Racine du projet - Fichiers de configuration (package.json, vite.config.ts, etc.)
+
+## 📚 Documentation
+
+Pour une documentation complète, consultez le dossier `/Documentation`:
+
+- **[Documentation/INDEX.md](./Documentation/INDEX.md)** - Table des matières complète
+- **[Documentation/ARCHITECTURE.md](./Documentation/ARCHITECTURE.md)** - Architecture du système
+- **[Documentation/README_DEVELOPMENT.md](./Documentation/README_DEVELOPMENT.md)** - Guide de développement
+- **[backend/README.md](./backend/README.md)** - Documentation backend spécifique
+- **[src/README.md](./src/README.md)** - Documentation frontend spécifique
 
 ## 🔌 API Endpoints
 
-### Authentification
+Pour la liste complète des endpoints API, consultez la [documentation backend](./backend/README.md#-api-endpoints).
 
-- `POST /api/auth/register` - Inscription
-- `POST /api/auth/login` - Connexion
-
-### Véhicules
-
-- `GET /api/vehicles` - Liste des véhicules
-- `GET /api/vehicles/:id` - Détails d'un véhicule
-- `POST /api/vehicles` - Créer un véhicule (admin)
-- `PUT /api/vehicles/:id` - Mettre à jour un véhicule (admin)
-
-### Réservations
-
-- `GET /api/bookings` - Liste des réservations (utilisateur connecté)
-- `POST /api/bookings` - Créer une réservation
-- `PATCH /api/bookings/:id/cancel` - Annuler une réservation
-
-### Stations
-
-- `GET /api/stations` - Liste des stations
-
-### Incidents
-
-- `GET /api/incidents` - Liste des incidents (utilisateur connecté)
-- `POST /api/incidents` - Créer un incident
-
-### Utilisateurs (admin)
-
-- `GET /api/users` - Liste des utilisateurs
-
-### Maintenance (admin)
-
-- `GET /api/maintenance` - Liste des maintenances
+**Endpoints principaux:**
+- Authentification (`/api/auth`)
+- Véhicules (`/api/vehicles`)
+- Réservations (`/api/bookings`)
+- Stations (`/api/stations`)
+- Incidents (`/api/incidents`)
+- Utilisateurs (`/api/users`)
+- Maintenance (`/api/maintenance`)
 
 ## 👤 Comptes de test
 
