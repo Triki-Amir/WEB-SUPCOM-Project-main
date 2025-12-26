@@ -78,7 +78,7 @@ backend/
 
    # Database Configuration
    # This URL points to the PostgreSQL container defined in docker-compose.yml
-   DATABASE_URL="postgresql://postgres@localhost:5432/car_rental_db"
+   DATABASE_URL="postgresql://postgres:admin@localhost:5432/car_rental_db"
 
    # Server Configuration
    PORT=5000
