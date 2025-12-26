@@ -4,6 +4,9 @@ Welcome to the Auto Fleet project documentation. This index provides a comprehen
 
 ## 📖 Main Documentation
 
+### [QUICKSTART.md](./QUICKSTART.md)
+⚡ Quick start guide - Get up and running in 5 minutes!
+
 ### [README.md](./README.md)
 Main documentation guide - Getting started, installation, and usage instructions for the Auto Fleet car rental system.
 

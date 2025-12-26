@@ -21,6 +21,8 @@ npm run dev          # Runs on http://localhost:5000
 npm run dev          # Runs on http://localhost:3000
 ```
 
+📖 **Detailed guide:** [QUICKSTART.md](./Documentation/QUICKSTART.md)
+
 ## 📂 Structure du Projet
 
 Le projet est organisé de manière claire et logique:

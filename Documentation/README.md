@@ -6,6 +6,8 @@ Welcome to the comprehensive documentation for the Auto Fleet car rental managem
 
 **Start here**: [INDEX.md](./INDEX.md) - Complete table of contents with links to all documentation
 
+**Quick Start**: [QUICKSTART.md](./QUICKSTART.md) - Get running in 5 minutes! ⚡
+
 ## 📖 Documentation Structure
 
 ### Essential Reads
