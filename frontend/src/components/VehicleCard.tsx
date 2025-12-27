@@ -72,7 +72,7 @@ export function VehicleCard({
 
         <div className="flex items-center justify-between mt-4">
           <div>
-            <span className="text-2xl">{price}€</span>
+            <span className="text-2xl">{price} DT</span>
             <span className="text-sm text-gray-600">/jour</span>
           </div>
           <Button 

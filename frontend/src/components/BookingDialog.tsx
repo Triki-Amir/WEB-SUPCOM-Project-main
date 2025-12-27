@@ -64,7 +64,7 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
                 <MapPin className="w-4 h-4" />
                 <div>
                   <div>Prise en charge</div>
-                  <div>Paris, France</div>
+                  <div>Tunis, Tunisie</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
@@ -111,20 +111,20 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Location ({days} jours)</span>
-              <span>{vehicle.price}€ × {days}</span>
+              <span>{vehicle.price} DT × {days}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Assurance</span>
-              <span>45€</span>
+              <span>45 DT</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Frais de service</span>
-              <span>15€</span>
+              <span>15 DT</span>
             </div>
             <Separator />
             <div className="flex justify-between">
               <span>Total</span>
-              <span>{totalPrice + 60}€</span>
+              <span>{totalPrice + 60} DT</span>
             </div>
           </div>
         </div>

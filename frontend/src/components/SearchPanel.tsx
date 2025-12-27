@@ -22,7 +22,7 @@ export interface SearchFilters {
 }
 
 export function SearchPanel({ onSearch }: SearchPanelProps) {
-  const [location, setLocation] = useState("Paris");
+  const [location, setLocation] = useState("Tunis");
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
   const [category, setCategory] = useState("all");
