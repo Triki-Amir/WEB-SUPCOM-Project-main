@@ -59,7 +59,6 @@ model Vehicle {
   seats       Int
   transmission String
   fuelType    String
-  dailyRate   Float
   imageUrl    String?
   status      VehicleStatus @default(AVAILABLE)
   mileage     Int           @default(0)
