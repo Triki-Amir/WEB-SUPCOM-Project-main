@@ -335,6 +335,42 @@ export const userService = {
       body: JSON.stringify(userData),
     });
   },
+
+  /**
+   * Create new user (admin only)
+   */
+  create: async (userData: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    address?: string;
+    role?: string;
+  }) => {
+    return apiRequest('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  /**
+   * Update user (admin only)
+   */
+  update: async (id: string, userData: any) => {
+    return apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  /**
+   * Delete user (admin only)
+   */
+  delete: async (id: string) => {
+    return apiRequest(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 /**
