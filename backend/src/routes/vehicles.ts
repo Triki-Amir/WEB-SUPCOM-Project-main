@@ -9,6 +9,8 @@ router.get('/', async (req, res) => {
   try {
     const { status, category, stationId, city, startDate, endDate, available } = req.query;
     
+    console.log('Query params:', { status, category, stationId, city, startDate, endDate, available });
+    
     // Find stations by city if city is provided
     let stationIds: string[] | undefined;
     if (city) {
@@ -19,6 +21,7 @@ router.get('/', async (req, res) => {
         select: { id: true }
       });
       stationIds = stationsInCity.map(s => s.id);
+      console.log('Stations found in city:', stationIds);
     }
 
     // Parse dates for booking conflict check
@@ -29,7 +32,7 @@ router.get('/', async (req, res) => {
     let vehicles = await prisma.vehicle.findMany({
       where: {
         ...(status && { status: status as any }),
-        ...(category && category !== 'all' && { category: category as string }),
+        ...(category && category !== 'all' && { category: { equals: category as string, mode: 'insensitive' } }),
         ...(stationId && { stationId: stationId as string }),
         ...(stationIds && stationIds.length > 0 && { stationId: { in: stationIds } }),
       },
@@ -42,6 +45,8 @@ router.get('/', async (req, res) => {
         },
       },
     });
+
+    console.log('Vehicles before date filter:', vehicles.length);
 
     // Filter by availability based on booking dates if provided
     if (checkStartDate && checkEndDate) {
