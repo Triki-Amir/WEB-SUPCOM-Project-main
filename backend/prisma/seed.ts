@@ -8,7 +8,6 @@ async function main() {
 
   // Clear existing data
   await prisma.notification.deleteMany();
-  await prisma.incident.deleteMany();
   await prisma.maintenance.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.vehicle.deleteMany();
@@ -16,7 +15,7 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Create users
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('demo123', 10);
 
   const client = await prisma.user.create({
     data: {
@@ -104,7 +103,6 @@ async function main() {
       seats: 5,
       transmission: 'Manuelle',
       fuelType: 'Essence',
-      dailyRate: 45.0,
       status: 'AVAILABLE' as const,
       mileage: 12000,
       stationId: tunisStation.id,
@@ -119,7 +117,6 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Diesel',
-      dailyRate: 50.0,
       status: 'AVAILABLE' as const,
       mileage: 8000,
       stationId: tunisStation.id,
@@ -134,7 +131,6 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Essence',
-      dailyRate: 60.0,
       status: 'RENTED' as const,
       mileage: 25000,
       stationId: sfaxStation.id,
@@ -149,7 +145,6 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Hybride',
-      dailyRate: 70.0,
       status: 'AVAILABLE' as const,
       mileage: 5000,
       stationId: sousseStation.id,
@@ -164,7 +159,6 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Diesel',
-      dailyRate: 90.0,
       status: 'AVAILABLE' as const,
       mileage: 3000,
       stationId: tunisStation.id,
@@ -179,7 +173,6 @@ async function main() {
       seats: 5,
       transmission: 'Manuelle',
       fuelType: 'Essence',
-      dailyRate: 40.0,
       status: 'MAINTENANCE' as const,
       mileage: 35000,
       stationId: sfaxStation.id,
@@ -210,18 +203,6 @@ async function main() {
         pickupLocation: 'Sfax Centre',
         dropoffLocation: 'Tunis Aéroport',
         notes: 'Client régulier',
-      },
-    });
-
-    // Create incident for this booking
-    await prisma.incident.create({
-      data: {
-        bookingId: booking.id,
-        userId: client.id,
-        title: 'Pneu crevé',
-        description: 'Le pneu avant droit a crevé sur l\'autoroute A1',
-        status: 'IN_PROGRESS',
-        severity: 'MEDIUM',
       },
     });
   }
@@ -294,9 +275,9 @@ async function main() {
 
   console.log('🎉 Seed terminé avec succès!');
   console.log('\nComptes de test:');
-  console.log('Client: client@autofleet.tn / password123');
-  console.log('Admin: admin@autofleet.tn / password123');
-  console.log('Direction: direction@autofleet.tn / password123');
+  console.log('Client: client@autofleet.tn / demo123');
+  console.log('Admin: admin@autofleet.tn / demo123');
+  console.log('Direction: direction@autofleet.tn / demo123');
 }
 
 main()

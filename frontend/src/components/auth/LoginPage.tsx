@@ -5,13 +5,13 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useAuth } from "../../contexts/AuthContext";
-import { Mail, Lock, User, Phone } from "lucide-react";
+import { Mail, Lock, User, Phone, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import logoImage from "../../assets/logo.png";
 
 export function LoginPage() {
-  const { login, register } = useAuth();
+  const { login, register, isLoading } = useAuth();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
@@ -19,30 +19,47 @@ export function LoginPage() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerPhone, setRegisterPhone] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loginEmail && loginPassword) {
-      login(loginEmail, loginPassword);
-      toast.success("Connexion réussie !");
+      try {
+        await login(loginEmail, loginPassword);
+      } catch (error) {
+        // Error is already handled in AuthContext
+      }
+    } else {
+      toast.error("Veuillez remplir tous les champs");
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (registerName && registerEmail && registerPassword) {
-      register(registerName, registerEmail, registerPassword);
-      toast.success("Compte créé avec succès !");
+      if (registerPassword.length < 6) {
+        toast.error("Le mot de passe doit contenir au moins 6 caractères");
+        return;
+      }
+      try {
+        await register(registerName, registerEmail, registerPassword, registerPhone);
+      } catch (error) {
+        // Error is already handled in AuthContext
+      }
+    } else {
+      toast.error("Veuillez remplir tous les champs obligatoires");
     }
   };
 
-  const handleDemoLogin = (role: string) => {
+  const handleDemoLogin = async (role: string) => {
     const emails = {
       client: "client@autofleet.tn",
       admin: "admin@autofleet.tn",
       direction: "direction@autofleet.tn",
     };
-    login(emails[role as keyof typeof emails], "demo");
-    toast.success(`Connexion en tant que ${role}`);
+    try {
+      await login(emails[role as keyof typeof emails], "demo123");
+    } catch (error) {
+      // Error is already handled in AuthContext
+    }
   };
 
   return (
@@ -123,8 +140,15 @@ export function LoginPage() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full bg-[#0B2E33] hover:bg-[#4F7C82] text-white">
-                    Se connecter
+                  <Button type="submit" className="w-full bg-[#0B2E33] hover:bg-[#4F7C82] text-white" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connexion en cours...
+                      </>
+                    ) : (
+                      "Se connecter"
+                    )}
                   </Button>
                 </form>
 
@@ -226,8 +250,15 @@ export function LoginPage() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full bg-[#0B2E33] hover:bg-[#4F7C82] text-white">
-                    Créer un compte
+                  <Button type="submit" className="w-full bg-[#0B2E33] hover:bg-[#4F7C82] text-white" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Création en cours...
+                      </>
+                    ) : (
+                      "Créer un compte"
+                    )}
                   </Button>
                 </form>
               </TabsContent>

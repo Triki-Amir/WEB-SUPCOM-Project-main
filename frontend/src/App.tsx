@@ -33,9 +33,9 @@ function AppContent() {
               <div>
                 <h1 className="text-xl" style={{ color: '#0B2E33' }}>Auto Fleet</h1>
                 <p className="text-xs" style={{ color: '#4F7C82' }}>
-                  {user.role === "client" && "Espace Client"}
-                  {user.role === "admin" && "Administration de Parc"}
-                  {user.role === "direction" && "Direction"}
+                  {user.role === "CLIENT" && "Espace Client"}
+                  {user.role === "ADMIN" && "Administration de Parc"}
+                  {user.role === "DIRECTION" && "Direction"}
                 </p>
               </div>
             </div>
@@ -66,9 +66,9 @@ function AppContent() {
       </header>
 
       <main>
-        {user.role === "client" && <ClientDashboard />}
-        {user.role === "admin" && <AdminDashboard />}
-        {user.role === "direction" && <DirectionDashboard />}
+        {user.role === "CLIENT" && <ClientDashboard />}
+        {user.role === "ADMIN" && <AdminDashboard />}
+        {user.role === "DIRECTION" && <DirectionDashboard />}
       </main>
 
       <footer className="bg-white border-t mt-12" style={{ borderColor: '#B8E3E9' }}>
