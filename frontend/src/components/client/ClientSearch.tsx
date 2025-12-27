@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SearchPanel } from "../SearchPanel";
+import { SearchPanel, SearchFilters } from "../SearchPanel";
 import { VehicleCard } from "../VehicleCard";
 import { BookingDialog } from "../BookingDialog";
 import { Card, CardContent } from "../ui/card";
@@ -40,8 +40,10 @@ export function ClientSearch() {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [searchStation, setSearchStation] = useState("");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentFilters, setCurrentFilters] = useState<SearchFilters | null>(null);
 
   useEffect(() => {
     loadData();
@@ -55,6 +57,7 @@ export function ClientSearch() {
         api.stations.getAll()
       ]);
       setVehicles(vehiclesData as Vehicle[]);
+      setFilteredVehicles(vehiclesData as Vehicle[]);
       setStations(stationsData as Station[]);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -64,8 +67,47 @@ export function ClientSearch() {
     }
   };
 
+  const handleSearch = async (filters: SearchFilters) => {
+    try {
+      setLoading(true);
+      setCurrentFilters(filters);
+
+      const queryParams: any = {
+        available: true,
+      };
+
+      // Add category filter if not 'all'
+      if (filters.category && filters.category !== 'all') {
+        queryParams.category = filters.category;
+      }
+
+      // Add city filter from location
+      if (filters.location) {
+        queryParams.city = filters.location;
+      }
+
+      // Add date filters
+      if (filters.startDate) {
+        queryParams.startDate = filters.startDate.toISOString();
+      }
+      if (filters.endDate) {
+        queryParams.endDate = filters.endDate.toISOString();
+      }
+
+      const vehiclesData = await api.vehicles.getAll(queryParams);
+      setFilteredVehicles(vehiclesData as Vehicle[]);
+      toast.success(`${vehiclesData.length} véhicule(s) trouvé(s)`);
+    } catch (error) {
+      console.error("Error searching vehicles:", error);
+      toast.error("Erreur lors de la recherche");
+      setFilteredVehicles(vehicles);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSelectVehicle = (vehicleId: string) => {
-    const vehicle = vehicles.find((v) => v.id === vehicleId);
+    const vehicle = filteredVehicles.find((v) => v.id === vehicleId);
     if (vehicle) {
       setSelectedVehicle(vehicle);
       setBookingDialogOpen(true);
@@ -77,12 +119,16 @@ export function ClientSearch() {
     setBookingDialogOpen(false);
     setSelectedVehicle(null);
     // Refresh vehicles list to update availability
-    loadData();
+    if (currentFilters) {
+      handleSearch(currentFilters);
+    } else {
+      loadData();
+    }
   };
 
   return (
     <div className="space-y-6">
-      <SearchPanel onSearch={() => toast.success("Recherche effectuée")} />
+      <SearchPanel onSearch={handleSearch} />
 
       {loading ? (
         <div className="flex items-center justify-center p-12">
@@ -92,17 +138,19 @@ export function ClientSearch() {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <h2 className="mb-4">Véhicules disponibles</h2>
-            {vehicles.length === 0 ? (
+            {filteredVehicles.length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center">
                   <Car className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun véhicule disponible</h3>
-                  <p className="text-gray-600">Aucun véhicule n'est disponible pour le moment</p>
+                  <p className="text-gray-600">
+                    {currentFilters ? 'Aucun véhicule ne correspond à vos critères de recherche' : 'Aucun véhicule n\'est disponible pour le moment'}
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {vehicles.map((vehicle) => (
+                {filteredVehicles.map((vehicle) => (
                   <VehicleCard 
                     key={vehicle.id}
                     id={vehicle.id}

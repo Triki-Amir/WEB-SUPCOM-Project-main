@@ -107,11 +107,23 @@ export const vehicleService = {
     type?: string;
     available?: boolean;
     station?: string;
+    status?: string;
+    category?: string;
+    stationId?: string;
+    city?: string;
+    startDate?: string;
+    endDate?: string;
   }) => {
     const queryParams = new URLSearchParams();
     if (filters?.type) queryParams.append('type', filters.type);
     if (filters?.available !== undefined) queryParams.append('available', String(filters.available));
     if (filters?.station) queryParams.append('station', filters.station);
+    if (filters?.status) queryParams.append('status', filters.status);
+    if (filters?.category) queryParams.append('category', filters.category);
+    if (filters?.stationId) queryParams.append('stationId', filters.stationId);
+    if (filters?.city) queryParams.append('city', filters.city);
+    if (filters?.startDate) queryParams.append('startDate', filters.startDate);
+    if (filters?.endDate) queryParams.append('endDate', filters.endDate);
     
     const query = queryParams.toString();
     return apiRequest(`/vehicles${query ? `?${query}` : ''}`);

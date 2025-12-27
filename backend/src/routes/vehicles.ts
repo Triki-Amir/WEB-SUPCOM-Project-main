@@ -4,24 +4,65 @@ import prisma from '../lib/prisma';
 
 const router = Router();
 
-// Get all vehicles
+// Get all vehicles with advanced filtering
 router.get('/', async (req, res) => {
   try {
-    const { status, category, stationId } = req.query;
+    const { status, category, stationId, city, startDate, endDate, available } = req.query;
     
-    const vehicles = await prisma.vehicle.findMany({
+    // Find stations by city if city is provided
+    let stationIds: string[] | undefined;
+    if (city) {
+      const stationsInCity = await prisma.station.findMany({
+        where: {
+          city: { equals: city as string, mode: 'insensitive' }
+        },
+        select: { id: true }
+      });
+      stationIds = stationsInCity.map(s => s.id);
+    }
+
+    // Parse dates for booking conflict check
+    const checkStartDate = startDate ? new Date(startDate as string) : undefined;
+    const checkEndDate = endDate ? new Date(endDate as string) : undefined;
+
+    // Get all vehicles matching base criteria
+    let vehicles = await prisma.vehicle.findMany({
       where: {
         ...(status && { status: status as any }),
-        ...(category && { category: category as string }),
+        ...(category && category !== 'all' && { category: category as string }),
         ...(stationId && { stationId: stationId as string }),
+        ...(stationIds && stationIds.length > 0 && { stationId: { in: stationIds } }),
       },
       include: {
         station: true,
+        bookings: {
+          where: {
+            status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
+          },
+        },
       },
     });
 
+    // Filter by availability based on booking dates if provided
+    if (checkStartDate && checkEndDate) {
+      vehicles = vehicles.filter(vehicle => {
+        // Check if vehicle has any conflicting bookings
+        const hasConflict = vehicle.bookings.some(booking => {
+          const bookingStart = new Date(booking.startDate);
+          const bookingEnd = new Date(booking.endDate);
+          // Check for date overlap
+          return checkStartDate < bookingEnd && checkEndDate > bookingStart;
+        });
+        return !hasConflict;
+      });
+    } else if (available === 'true') {
+      // Filter by AVAILABLE status only
+      vehicles = vehicles.filter(v => v.status === 'AVAILABLE');
+    }
+
     res.json(vehicles);
   } catch (error) {
+    console.error('Error fetching vehicles:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des véhicules' });
   }
 });
