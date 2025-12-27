@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "stations" ADD COLUMN     "capacity" INTEGER NOT NULL DEFAULT 20,
-ADD COLUMN     "isOpen" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "openingHours" TEXT NOT NULL DEFAULT '08:00 - 20:00';

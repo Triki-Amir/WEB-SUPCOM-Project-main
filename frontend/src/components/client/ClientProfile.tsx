@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -7,26 +7,70 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { useAuth } from "../../contexts/AuthContext";
-import { User, Mail, Phone, MapPin, CreditCard, Shield, Bell } from "lucide-react";
+import { User, Mail, Phone, MapPin, CreditCard, Shield, Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
 
 export function ClientProfile() {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [address, setAddress] = useState(user?.address || "");
+  const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+  
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
-  const handleSave = () => {
-    updateProfile({ name, phone, address });
-    setIsEditing(false);
-    toast.success("Profil mis à jour avec succès");
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const data = await api.users.getProfile();
+      setProfileData(data);
+      setName(data.name || "");
+      setPhone(data.phone || "");
+      setAddress(data.address || "");
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      toast.error("Erreur lors du chargement du profil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await api.users.updateProfile({ 
+        name, 
+        phone: phone || undefined, 
+        address: address || undefined 
+      });
+      setIsEditing(false);
+      toast.success("Profil mis à jour avec succès");
+      loadProfile(); // Reload profile data
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Erreur lors de la mise à jour du profil");
+    }
   };
 
   const paymentMethods = [
     { id: "1", type: "Visa", last4: "4242", expiry: "12/26" },
     { id: "2", type: "Mastercard", last4: "8888", expiry: "09/25" },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const displayUser = profileData || user;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -38,14 +82,14 @@ export function ClientProfile() {
           <div className="flex items-center gap-4">
             <Avatar className="w-20 h-20">
               <AvatarFallback className="text-2xl">
-                {user?.name?.charAt(0).toUpperCase()}
+                {displayUser?.name?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3>{user?.name}</h3>
-              <p className="text-sm text-gray-600">{user?.email}</p>
+              <h3>{displayUser?.name || "Utilisateur"}</h3>
+              <p className="text-sm text-gray-600">{displayUser?.email}</p>
               <Badge variant="secondary" className="mt-1">
-                Client Vérifié
+                Client {displayUser?.role === "CLIENT" ? "Vérifié" : displayUser?.role}
               </Badge>
             </div>
           </div>
@@ -61,7 +105,12 @@ export function ClientProfile() {
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setIsEditing(false);
+                    setName(displayUser?.name || "");
+                    setPhone(displayUser?.phone || "");
+                    setAddress(displayUser?.address || "");
+                  }}>
                     Annuler
                   </Button>
                   <Button size="sm" onClick={handleSave}>
@@ -92,7 +141,7 @@ export function ClientProfile() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <Input
                     id="email"
-                    value={user?.email}
+                    value={displayUser?.email || ""}
                     disabled
                     className="pl-9"
                   />
@@ -109,6 +158,7 @@ export function ClientProfile() {
                     onChange={(e) => setPhone(e.target.value)}
                     disabled={!isEditing}
                     className="pl-9"
+                    placeholder="Optionnel"
                   />
                 </div>
               </div>
@@ -123,6 +173,7 @@ export function ClientProfile() {
                     onChange={(e) => setAddress(e.target.value)}
                     disabled={!isEditing}
                     className="pl-9"
+                    placeholder="Optionnel"
                   />
                 </div>
               </div>

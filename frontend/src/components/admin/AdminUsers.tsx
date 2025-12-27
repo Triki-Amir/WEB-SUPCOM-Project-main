@@ -7,44 +7,29 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "../ui/dialog";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { User, Mail, Phone, Shield, Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { User, Mail, Phone, Shield, Plus, Edit, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { userService } from "../../services/api";
+import api from "../../services/api";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface UserAccount {
   id: string;
   name: string;
   email: string;
-  phone: string | null;
-  address: string | null;
-  role: "CLIENT" | "ADMIN" | "DIRECTION";
+  phone?: string;
+  address?: string;
+  role: string;
   createdAt: string;
 }
 
 export function AdminUsers() {
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
-
-  // Form state for adding user
-  const [newUser, setNewUser] = useState({
-    email: "",
-    password: "",
-    name: "",
-    phone: "",
-    address: "",
-    role: "CLIENT"
-  });
-
-  // Form state for editing user
-  const [editUser, setEditUser] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    role: "CLIENT"
-  });
+  const [selectedRole, setSelectedRole] = useState("");
 
   useEffect(() => {
     loadUsers();
@@ -53,205 +38,86 @@ export function AdminUsers() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const data = await userService.getAll();
+      const data = await api.users.getAll();
       setUsers(data);
     } catch (error) {
+      console.error("Error loading users:", error);
       toast.error("Erreur lors du chargement des utilisateurs");
-      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddUser = async () => {
-    try {
-      if (!newUser.email || !newUser.password || !newUser.name) {
-        toast.error("Veuillez remplir tous les champs obligatoires");
-        return;
-      }
-
-      await userService.create(newUser);
-      toast.success("Utilisateur ajouté avec succès");
-      setAddDialogOpen(false);
-      setNewUser({
-        email: "",
-        password: "",
-        name: "",
-        phone: "",
-        address: "",
-        role: "CLIENT"
-      });
-      loadUsers();
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout de l'utilisateur");
-      console.error(error);
-    }
-  };
-
   const handleEditUser = (user: UserAccount) => {
     setSelectedUser(user);
-    setEditUser({
-      name: user.name,
-      phone: user.phone || "",
-      address: user.address || "",
-      role: user.role
-    });
+    setSelectedRole(user.role);
     setEditDialogOpen(true);
   };
 
   const handleSaveEdit = async () => {
-    try {
-      if (!selectedUser) return;
+    if (!selectedUser) return;
 
-      await userService.update(selectedUser.id, editUser);
-      toast.success("Utilisateur mis à jour avec succès");
+    try {
+      await api.users.updateRole(selectedUser.id, selectedRole);
+      toast.success("Rôle de l'utilisateur mis à jour");
       setEditDialogOpen(false);
-      setSelectedUser(null);
       loadUsers();
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour de l'utilisateur");
-      console.error(error);
+    } catch (error: any) {
+      console.error("Error updating user role:", error);
+      toast.error(error.message || "Erreur lors de la mise à jour");
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
-      return;
-    }
-
     try {
-      await userService.delete(userId);
-      toast.success("Utilisateur supprimé avec succès");
+      await api.users.delete(userId);
+      toast.success("Utilisateur supprimé");
       loadUsers();
-    } catch (error) {
-      toast.error("Erreur lors de la suppression de l'utilisateur");
-      console.error(error);
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      toast.error(error.message || "Erreur lors de la suppression");
     }
   };
 
   const getRoleBadge = (role: string) => {
-    const variants = {
-      CLIENT: { label: "Client", variant: "secondary" as const },
-      ADMIN: { label: "Admin", variant: "default" as const },
-      DIRECTION: { label: "Direction", variant: "default" as const },
+    const roleMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+      CLIENT: { label: "Client", variant: "secondary" },
+      ADMIN: { label: "Admin", variant: "default" },
+      DIRECTION: { label: "Direction", variant: "default" },
     };
-    const { label, variant } = variants[role as keyof typeof variants] || { label: role, variant: "secondary" as const };
+    const { label, variant } = roleMap[role] || { label: role, variant: "secondary" as const };
     return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Gestion des utilisateurs</CardTitle>
-            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Ajouter un utilisateur
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Ajouter un utilisateur</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nom complet *</Label>
-                    <Input 
-                      placeholder="Nom et prénom" 
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email *</Label>
-                    <Input 
-                      type="email" 
-                      placeholder="email@example.com" 
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Mot de passe *</Label>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Téléphone</Label>
-                    <Input 
-                      placeholder="+216 XX XXX XXX" 
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Adresse</Label>
-                    <Input 
-                      placeholder="Adresse complète" 
-                      value={newUser.address}
-                      onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Rôle *</Label>
-                    <Select 
-                      value={newUser.role} 
-                      onValueChange={(value) => setNewUser({ ...newUser, role: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un rôle" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CLIENT">Client</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                        <SelectItem value="DIRECTION">Direction</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-                    Annuler
-                  </Button>
-                  <Button onClick={handleAddUser}>Ajouter</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+          <CardTitle>Gestion des utilisateurs</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              Aucun utilisateur trouvé
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {users.map((user) => (
+          <div className="space-y-3">
+            {users.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>Aucun utilisateur</p>
+              </div>
+            ) : (
+              users.map((user) => (
                 <Card key={user.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <Avatar className="w-12 h-12">
                         <AvatarFallback>
-                          {user.name.split(" ").map((n) => n[0]).join("").toUpperCase()}
+                          {user.name.split(" ").map((n) => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
@@ -270,8 +136,8 @@ export function AdminUsers() {
                               <span>{user.phone}</span>
                             </div>
                           )}
-                          <div className="text-xs text-gray-400">
-                            Inscrit le {formatDate(user.createdAt)}
+                          <div className="text-xs">
+                            Inscrit le {format(new Date(user.createdAt), "d MMMM yyyy", { locale: fr })}
                           </div>
                         </div>
                       </div>
@@ -281,59 +147,54 @@ export function AdminUsers() {
                           size="sm"
                           onClick={() => handleEditUser(user)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-4 h-4 mr-2" />
+                          Rôle
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Supprimer l'utilisateur</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                                Supprimer
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+            <DialogTitle>Modifier le rôle</DialogTitle>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nom complet</Label>
-                <Input 
-                  value={editUser.name}
-                  onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Téléphone</Label>
-                <Input 
-                  value={editUser.phone}
-                  onChange={(e) => setEditUser({ ...editUser, phone: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Adresse</Label>
-                <Input 
-                  value={editUser.address}
-                  onChange={(e) => setEditUser({ ...editUser, address: e.target.value })}
-                />
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Utilisateur: {selectedUser.name}</p>
+                <p className="text-sm text-gray-600">Email: {selectedUser.email}</p>
               </div>
               <div className="space-y-2">
                 <Label>Rôle</Label>
-                <Select 
-                  value={editUser.role} 
-                  onValueChange={(value) => setEditUser({ ...editUser, role: value })}
-                >
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

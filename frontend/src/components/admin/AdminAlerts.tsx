@@ -1,166 +1,209 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { AlertCircle, Battery, Wrench, Fuel, Clock, CheckCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { AlertCircle, Clock, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
-interface Alert {
+interface Incident {
   id: string;
-  type: "battery" | "fuel" | "maintenance" | "technical";
-  severity: "critical" | "warning" | "info";
-  vehicle: string;
-  message: string;
-  time: string;
-  resolved: boolean;
+  userId: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  bookingId: string;
+  booking: {
+    vehicle: {
+      brand: string;
+      model: string;
+      licensePlate: string;
+    };
+  };
+  description: string;
+  severity: string;
+  status: string;
+  createdAt: string;
 }
 
 export function AdminAlerts() {
-  const alerts: Alert[] = [
-    {
-      id: "1",
-      type: "battery",
-      severity: "critical",
-      vehicle: "Tesla Model 3 - 123 TUN 456",
-      message: "Niveau de batterie critique : 15%",
-      time: "Il y a 10 min",
-      resolved: false,
-    },
-    {
-      id: "2",
-      type: "fuel",
-      severity: "warning",
-      vehicle: "Peugeot 3008 - 345 TUN 678",
-      message: "Niveau de carburant faible : 20%",
-      time: "Il y a 30 min",
-      resolved: false,
-    },
-    {
-      id: "3",
-      type: "maintenance",
-      severity: "warning",
-      vehicle: "Renault Clio - 789 TUN 012",
-      message: "Maintenance programmée dans 2 jours",
-      time: "Il y a 2h",
-      resolved: false,
-    },
-    {
-      id: "4",
-      type: "technical",
-      severity: "critical",
-      vehicle: "Dacia Sandero - 234 TUN 567",
-      message: "Capteur de pression des pneus défaillant",
-      time: "Il y a 3h",
-      resolved: false,
-    },
-  ];
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterSeverity, setFilterSeverity] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  const handleResolveAlert = (alertId: string) => {
-    toast.success("Alerte résolue");
+  useEffect(() => {
+    loadIncidents();
+  }, []);
+
+  const loadIncidents = async () => {
+    try {
+      setLoading(true);
+      const data = await api.incidents.getAll();
+      setIncidents(data);
+    } catch (error) {
+      console.error("Error loading incidents:", error);
+      toast.error("Erreur lors du chargement des incidents");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTriggerAction = (alertId: string) => {
-    toast.success("Action déclenchée");
+  const handleUpdateStatus = async (incidentId: string, newStatus: string) => {
+    try {
+      await api.incidents.updateStatus(incidentId, newStatus);
+      toast.success("Statut de l'incident mis à jour");
+      loadIncidents();
+    } catch (error: any) {
+      console.error("Error updating incident status:", error);
+      toast.error(error.message || "Erreur lors de la mise à jour");
+    }
   };
 
   const getSeverityBadge = (severity: string) => {
-    const variants = {
-      critical: { label: "Critique", variant: "destructive" as const },
-      warning: { label: "Avertissement", variant: "default" as const },
-      info: { label: "Info", variant: "secondary" as const },
+    const severityMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+      LOW: { label: "Faible", variant: "secondary" },
+      MEDIUM: { label: "Moyenne", variant: "default" },
+      HIGH: { label: "Haute", variant: "destructive" },
+      CRITICAL: { label: "Critique", variant: "destructive" },
     };
-    const { label, variant } = variants[severity as keyof typeof variants];
+    const { label, variant } = severityMap[severity] || severityMap.MEDIUM;
     return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const getAlertIcon = (type: string) => {
-    const icons = {
-      battery: Battery,
-      fuel: Fuel,
-      maintenance: Wrench,
-      technical: AlertCircle,
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+      PENDING: { label: "En attente", variant: "destructive" },
+      IN_PROGRESS: { label: "En cours", variant: "default" },
+      RESOLVED: { label: "Résolu", variant: "secondary" },
+      REJECTED: { label: "Rejeté", variant: "destructive" },
     };
-    const Icon = icons[type as keyof typeof icons];
-    return <Icon className="w-5 h-5" />;
+    const { label, variant } = statusMap[status] || statusMap.PENDING;
+    return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const getAlertColor = (severity: string) => {
-    const colors = {
-      critical: "border-red-500 bg-red-50",
-      warning: "border-yellow-500 bg-yellow-50",
-      info: "border-blue-500 bg-blue-50",
-    };
-    return colors[severity as keyof typeof colors];
-  };
+  const filteredIncidents = incidents.filter((incident) => {
+    const matchesSeverity = filterSeverity === "all" || incident.severity === filterSeverity;
+    const matchesStatus = filterStatus === "all" || incident.status === filterStatus;
+    return matchesSeverity && matchesStatus;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Alertes techniques</CardTitle>
+            <CardTitle>Gestion des incidents</CardTitle>
             <div className="flex items-center gap-2">
               <Badge variant="destructive">
-                {alerts.filter((a) => !a.resolved).length} alertes actives
+                {incidents.filter((i) => i.status === "PENDING").length} incidents en attente
               </Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {alerts.filter((a) => !a.resolved).map((alert) => (
-              <Card
-                key={alert.id}
-                className={`border-l-4 ${getAlertColor(alert.severity)}`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {getAlertIcon(alert.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {getSeverityBadge(alert.severity)}
-                        <span className="text-xs text-gray-600 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {alert.time}
-                        </span>
-                      </div>
-                      <h4 className="mb-1">{alert.vehicle}</h4>
-                      <p className="text-sm text-gray-600 mb-3">{alert.message}</p>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleTriggerAction(alert.id)}
-                        >
-                          Déclencher action
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleResolveAlert(alert.id)}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Résoudre
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="mb-4 flex gap-2">
+            <Select value={filterSeverity} onValueChange={setFilterSeverity}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Gravité" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes gravités</SelectItem>
+                <SelectItem value="LOW">Faible</SelectItem>
+                <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                <SelectItem value="HIGH">Haute</SelectItem>
+                <SelectItem value="CRITICAL">Critique</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous statuts</SelectItem>
+                <SelectItem value="PENDING">En attente</SelectItem>
+                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                <SelectItem value="RESOLVED">Résolu</SelectItem>
+                <SelectItem value="REJECTED">Rejeté</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertes résolues</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-            <p>Aucune alerte résolue récemment</p>
+          <div className="space-y-3">
+            {filteredIncidents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                <p>Aucun incident trouvé</p>
+              </div>
+            ) : (
+              filteredIncidents.map((incident) => (
+                <Card key={incident.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-1">
+                        <AlertCircle className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {getSeverityBadge(incident.severity)}
+                          {getStatusBadge(incident.status)}
+                          <span className="text-xs text-gray-600 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatDistanceToNow(new Date(incident.createdAt), { addSuffix: true, locale: fr })}
+                          </span>
+                        </div>
+                        <h4 className="mb-1">
+                          {incident.booking.vehicle.brand} {incident.booking.vehicle.model} - {incident.booking.vehicle.licensePlate}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-1">
+                          Client: {incident.user.name} ({incident.user.email})
+                        </p>
+                        <p className="text-sm text-gray-600 mb-3">{incident.description}</p>
+                        {(incident.status === "PENDING" || incident.status === "IN_PROGRESS") && (
+                          <div className="flex gap-2">
+                            {incident.status === "PENDING" && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleUpdateStatus(incident.id, "IN_PROGRESS")}
+                              >
+                                Prendre en charge
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUpdateStatus(incident.id, "RESOLVED")}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Résoudre
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUpdateStatus(incident.id, "REJECTED")}
+                            >
+                              Rejeter
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

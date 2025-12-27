@@ -1,13 +1,62 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, Car, Users, DollarSign, AlertCircle, MapPin, Wrench } from "lucide-react";
+import { TrendingUp, TrendingDown, Car, Users, DollarSign, AlertCircle, MapPin, Wrench, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import api from "../../services/api";
+
+interface DashboardStats {
+  totalVehicles: number;
+  totalBookings: number;
+  totalRevenue: number;
+  activeBookings: number;
+  totalUsers: number;
+  totalIncidents: number;
+}
 
 export function DirectionOverview() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const data = await api.analytics.getDashboard();
+      setStats(data);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Erreur lors du chargement des statistiques");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+        <p>Impossible de charger les statistiques</p>
+      </div>
+    );
+  }
+
   const kpiCards = [
     {
       title: "Flotte totale",
-      value: "156 véhicules",
+      value: `${stats.totalVehicles} véhicules`,
       change: "+8 ce mois",
       trend: "up",
       icon: Car,
@@ -15,31 +64,31 @@ export function DirectionOverview() {
     },
     {
       title: "Clients actifs",
-      value: "2,845",
+      value: stats.totalUsers.toString(),
       change: "+124 ce mois",
       trend: "up",
       icon: Users,
       color: "text-green-600",
     },
     {
-      title: "Revenu mensuel",
-      value: "67,340 TND",
+      title: "Revenu total",
+      value: `${stats.totalRevenue.toFixed(2)} TND`,
       change: "+12.5%",
       trend: "up",
       icon: DollarSign,
       color: "text-purple-600",
     },
     {
-      title: "Taux d'utilisation",
-      value: "78%",
+      title: "Réservations actives",
+      value: stats.activeBookings.toString(),
       change: "+3.2%",
       trend: "up",
       icon: TrendingUp,
       color: "text-orange-600",
     },
     {
-      title: "Stations actives",
-      value: "12",
+      title: "Total réservations",
+      value: stats.totalBookings.toString(),
       change: "+2 ce mois",
       trend: "up",
       icon: MapPin,
@@ -47,27 +96,11 @@ export function DirectionOverview() {
     },
     {
       title: "Incidents",
-      value: "8",
+      value: stats.totalIncidents.toString(),
       change: "-4 vs mois dernier",
       trend: "down",
       icon: AlertCircle,
       color: "text-red-600",
-    },
-    {
-      title: "Maintenance",
-      value: "15 planifiées",
-      change: "5 en cours",
-      trend: "neutral",
-      icon: Wrench,
-      color: "text-yellow-600",
-    },
-    {
-      title: "Satisfaction client",
-      value: "4.6/5",
-      change: "+0.2",
-      trend: "up",
-      icon: Users,
-      color: "text-pink-600",
     },
   ];
 

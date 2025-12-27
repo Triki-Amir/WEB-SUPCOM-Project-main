@@ -76,6 +76,8 @@ export function ClientSearch() {
     toast.success("Réservation confirmée !");
     setBookingDialogOpen(false);
     setSelectedVehicle(null);
+    // Refresh vehicles list to update availability
+    loadData();
   };
 
   return (
@@ -172,8 +174,9 @@ export function ClientSearch() {
             name: `${selectedVehicle.brand} ${selectedVehicle.model}`,
             category: selectedVehicle.category,
             image: selectedVehicle.imageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400",
-            price: 50,
-            seats: selectedVehicle.seats
+            price: selectedVehicle.price,
+            seats: selectedVehicle.seats,
+            stationId: selectedVehicle.stationId
           }}
           onConfirm={handleConfirmBooking}
         />

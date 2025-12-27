@@ -1,85 +1,86 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Bell, CheckCircle, AlertCircle, Info, Clock, Trash2 } from "lucide-react";
+import { Bell, CheckCircle, AlertCircle, Info, Clock, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Notification {
   id: string;
-  type: "success" | "warning" | "info" | "error";
   title: string;
   message: string;
-  date: string;
+  type?: string;
   read: boolean;
+  createdAt: string;
 }
 
 export function ClientNotifications() {
-  const notifications: Notification[] = [
-    {
-      id: "1",
-      type: "success",
-      title: "Réservation confirmée",
-      message: "Votre réservation pour Tesla Model 3 a été confirmée pour le 15 Nov 2025.",
-      date: "Il y a 2 heures",
-      read: false,
-    },
-    {
-      id: "2",
-      type: "info",
-      title: "Rappel de prise en charge",
-      message: "N'oubliez pas de récupérer votre véhicule demain à 10:00 à la station Lac 2.",
-      date: "Il y a 5 heures",
-      read: false,
-    },
-    {
-      id: "3",
-      type: "warning",
-      title: "Retour en retard",
-      message: "Votre location devait se terminer hier. Veuillez retourner le véhicule dès que possible.",
-      date: "Il y a 1 jour",
-      read: true,
-    },
-    {
-      id: "4",
-      type: "success",
-      title: "Paiement effectué",
-      message: "Votre paiement de 135 TND a été traité avec succès.",
-      date: "Il y a 3 jours",
-      read: true,
-    },
-    {
-      id: "5",
-      type: "info",
-      title: "Nouvelle promotion",
-      message: "Profitez de 20% de réduction sur votre prochaine location avec le code DRIVE20.",
-      date: "Il y a 5 jours",
-      read: true,
-    },
-  ];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleMarkAsRead = (id: string) => {
-    toast.success("Notification marquée comme lue");
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const data = await api.notifications.getMyNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+      toast.error("Erreur lors du chargement des notifications");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    toast.success("Notification supprimée");
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await api.notifications.markAsRead(id);
+      setNotifications(notifications.map(n => 
+        n.id === id ? { ...n, read: true } : n
+      ));
+      toast.success("Notification marquée comme lue");
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    toast.success("Toutes les notifications ont été marquées comme lues");
+  const handleDelete = async (id: string) => {
+    try {
+      await api.notifications.delete(id);
+      setNotifications(notifications.filter(n => n.id !== id));
+      toast.success("Notification supprimée");
+    } catch (error) {
+      toast.error("Erreur lors de la suppression");
+    }
   };
 
-  const getIcon = (type: string) => {
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.notifications.markAllAsRead();
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+      toast.success("Toutes les notifications ont été marquées comme lues");
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const getIcon = (type?: string) => {
     const icons = {
       success: <CheckCircle className="w-5 h-5 text-green-600" />,
       warning: <AlertCircle className="w-5 h-5 text-yellow-600" />,
       info: <Info className="w-5 h-5 text-blue-600" />,
       error: <AlertCircle className="w-5 h-5 text-red-600" />,
     };
-    return icons[type as keyof typeof icons];
+    return type && icons[type as keyof typeof icons] ? icons[type as keyof typeof icons] : icons.info;
   };
 
-  const getBackgroundColor = (type: string, read: boolean) => {
+  const getBackgroundColor = (type?: string, read?: boolean) => {
     if (read) return "bg-gray-50";
     const colors = {
       success: "bg-green-50",
@@ -87,10 +88,18 @@ export function ClientNotifications() {
       info: "bg-blue-50",
       error: "bg-red-50",
     };
-    return colors[type as keyof typeof colors];
+    return type && colors[type as keyof typeof colors] ? colors[type as keyof typeof colors] : colors.info;
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -139,7 +148,7 @@ export function ClientNotifications() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             <Clock className="w-3 h-3" />
-                            <span>{notification.date}</span>
+                            <span>{formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: fr })}</span>
                           </div>
                           <div className="flex gap-2">
                             {!notification.read && (

@@ -166,18 +166,61 @@ export const bookingService = {
   },
 
   /**
+   * Get all bookings (admin only)
+   */
+  getAll: async () => {
+    return apiRequest('/bookings/all');
+  },
+
+  /**
+   * Get booking by ID
+   */
+  getById: async (id: string) => {
+    return apiRequest(`/bookings/${id}`);
+  },
+
+  /**
    * Create new booking
    */
   create: async (bookingData: {
     vehicleId: string;
+    stationId: string;
     startDate: string;
     endDate: string;
-    pickupStationId: string;
-    returnStationId: string;
+    totalPrice: number;
+    pickupLocation?: string;
+    dropoffLocation?: string;
+    notes?: string;
   }) => {
     return apiRequest('/bookings', {
       method: 'POST',
       body: JSON.stringify(bookingData),
+    });
+  },
+
+  /**
+   * Update booking
+   */
+  update: async (id: string, bookingData: {
+    startDate?: string;
+    endDate?: string;
+    pickupLocation?: string;
+    dropoffLocation?: string;
+    notes?: string;
+  }) => {
+    return apiRequest(`/bookings/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(bookingData),
+    });
+  },
+
+  /**
+   * Update booking status (admin only)
+   */
+  updateStatus: async (id: string, status: string) => {
+    return apiRequest(`/bookings/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     });
   },
 
@@ -188,13 +231,6 @@ export const bookingService = {
     return apiRequest(`/bookings/${id}/cancel`, {
       method: 'PATCH',
     });
-  },
-
-  /**
-   * Get all bookings (admin only)
-   */
-  getAll: async () => {
-    return apiRequest('/bookings/all');
   },
 };
 
@@ -320,6 +356,13 @@ export const userService = {
   },
 
   /**
+   * Get user by ID (admin only)
+   */
+  getById: async (id: string) => {
+    return apiRequest(`/users/${id}`);
+  },
+
+  /**
    * Get user profile
    */
   getProfile: async () => {
@@ -329,7 +372,11 @@ export const userService = {
   /**
    * Update user profile
    */
-  updateProfile: async (userData: any) => {
+  updateProfile: async (userData: {
+    name?: string;
+    phone?: string;
+    address?: string;
+  }) => {
     return apiRequest('/users/me', {
       method: 'PUT',
       body: JSON.stringify(userData),
@@ -337,29 +384,12 @@ export const userService = {
   },
 
   /**
-   * Create new user (admin only)
+   * Update user role (admin only)
    */
-  create: async (userData: {
-    email: string;
-    password: string;
-    name: string;
-    phone?: string;
-    address?: string;
-    role?: string;
-  }) => {
-    return apiRequest('/users', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
-  },
-
-  /**
-   * Update user (admin only)
-   */
-  update: async (id: string, userData: any) => {
-    return apiRequest(`/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(userData),
+  updateRole: async (id: string, role: string) => {
+    return apiRequest(`/users/${id}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
     });
   },
 
@@ -385,12 +415,22 @@ export const maintenanceService = {
   },
 
   /**
+   * Get maintenance by ID (admin only)
+   */
+  getById: async (id: string) => {
+    return apiRequest(`/maintenance/${id}`);
+  },
+
+  /**
    * Create maintenance record (admin only)
    */
   create: async (maintenanceData: {
     vehicleId: string;
+    type: string;
     description: string;
-    scheduledDate: string;
+    cost?: number;
+    scheduledAt: string;
+    notes?: string;
   }) => {
     return apiRequest('/maintenance', {
       method: 'POST',
@@ -399,12 +439,37 @@ export const maintenanceService = {
   },
 
   /**
-   * Update maintenance status (admin only)
+   * Update maintenance (admin only)
    */
-  updateStatus: async (id: string, status: string) => {
-    return apiRequest(`/maintenance/${id}/status`, {
+  update: async (id: string, maintenanceData: {
+    type?: string;
+    description?: string;
+    cost?: number;
+    scheduledAt?: string;
+    completedAt?: string;
+    notes?: string;
+  }) => {
+    return apiRequest(`/maintenance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(maintenanceData),
+    });
+  },
+
+  /**
+   * Complete maintenance (admin only)
+   */
+  complete: async (id: string) => {
+    return apiRequest(`/maintenance/${id}/complete`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+    });
+  },
+
+  /**
+   * Delete maintenance (admin only)
+   */
+  delete: async (id: string) => {
+    return apiRequest(`/maintenance/${id}`, {
+      method: 'DELETE',
     });
   },
 };
@@ -437,6 +502,55 @@ export const notificationService = {
       method: 'PATCH',
     });
   },
+
+  /**
+   * Delete notification
+   */
+  delete: async (id: string) => {
+    return apiRequest(`/notifications/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+/**
+ * Analytics Services
+ */
+export const analyticsService = {
+  /**
+   * Get dashboard statistics (admin and direction only)
+   */
+  getDashboard: async () => {
+    return apiRequest('/analytics/dashboard');
+  },
+
+  /**
+   * Get booking trends (admin and direction only)
+   */
+  getBookingTrends: async (period: number = 30) => {
+    return apiRequest(`/analytics/bookings/trends?period=${period}`);
+  },
+
+  /**
+   * Get vehicle performance (admin and direction only)
+   */
+  getVehiclePerformance: async () => {
+    return apiRequest('/analytics/vehicles/performance');
+  },
+
+  /**
+   * Get station statistics (admin and direction only)
+   */
+  getStationStatistics: async () => {
+    return apiRequest('/analytics/stations/statistics');
+  },
+
+  /**
+   * Get user statistics (admin and direction only)
+   */
+  getUserStatistics: async () => {
+    return apiRequest('/analytics/users/statistics');
+  },
 };
 
 // Export all services as a single object for convenience
@@ -449,6 +563,7 @@ export const api = {
   users: userService,
   maintenance: maintenanceService,
   notifications: notificationService,
+  analytics: analyticsService,
 };
 
 export default api;

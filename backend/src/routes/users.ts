@@ -1,13 +1,17 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 import prisma from '../lib/prisma';
-import bcrypt from 'bcrypt';
 
 const router = Router();
 
 // Get all users (admin only)
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
+    // Check if user is admin or direction
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
     const users = await prisma.user.findMany({
       select: { 
         id: true, 
@@ -16,23 +20,23 @@ router.get('/', authenticate, async (req, res) => {
         phone: true,
         address: true,
         role: true, 
-        createdAt: true 
+        createdAt: true,
+        updatedAt: true
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' },
     });
     res.json(users);
   } catch (error) {
+    console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs' });
   }
 });
 
 // Get current user profile
-router.get('/me', authenticate, async (req, res) => {
+router.get('/me', authenticate, async (req: AuthRequest, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: req.user!.id },
       select: {
         id: true,
         name: true,
@@ -40,7 +44,8 @@ router.get('/me', authenticate, async (req, res) => {
         phone: true,
         address: true,
         role: true,
-        createdAt: true
+        createdAt: true,
+        updatedAt: true
       }
     });
 
@@ -50,21 +55,22 @@ router.get('/me', authenticate, async (req, res) => {
 
     res.json(user);
   } catch (error) {
+    console.error('Error fetching user profile:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération du profil' });
   }
 });
 
 // Update current user profile
-router.put('/me', authenticate, async (req, res) => {
+router.put('/me', authenticate, async (req: AuthRequest, res) => {
   try {
     const { name, phone, address } = req.body;
 
     const user = await prisma.user.update({
-      where: { id: req.userId },
+      where: { id: req.user!.id },
       data: {
-        name,
-        phone,
-        address
+        ...(name && { name }),
+        ...(phone && { phone }),
+        ...(address && { address })
       },
       select: {
         id: true,
@@ -72,106 +78,127 @@ router.put('/me', authenticate, async (req, res) => {
         email: true,
         phone: true,
         address: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(400).json({ error: 'Erreur lors de la mise à jour du profil' });
+  }
+});
+
+// Get user by ID (admin only)
+router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+  try {
+    // Check if user is admin or direction
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            bookings: true,
+            incidents: true
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de l\'utilisateur' });
+  }
+});
+
+// Update user role (admin only)
+router.patch('/:id/role', authenticate, async (req: AuthRequest, res) => {
+  try {
+    // Check if user is admin
+    if (req.user!.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const { role } = req.body;
+
+    if (!role || !['CLIENT', 'ADMIN', 'DIRECTION'].includes(role)) {
+      return res.status(400).json({ error: 'Rôle invalide' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
         role: true
       }
     });
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' });
-  }
-});
-
-// Create new user (admin only)
-router.post('/', authenticate, async (req, res) => {
-  try {
-    const { email, password, name, phone, address, role } = req.body;
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'Un utilisateur avec cet email existe déjà' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        phone,
-        address,
-        role: role || 'CLIENT'
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        address: true,
-        role: true,
-        createdAt: true
-      }
-    });
-
-    res.status(201).json(user);
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ error: 'Erreur lors de la création de l\'utilisateur' });
-  }
-});
-
-// Update user (admin only)
-router.put('/:id', authenticate, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, phone, address, role } = req.body;
-
-    const user = await prisma.user.update({
-      where: { id },
-      data: {
-        name,
-        phone,
-        address,
-        role
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        address: true,
-        role: true,
-        createdAt: true
-      }
-    });
-
-    res.json(user);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'utilisateur' });
+    console.error('Error updating user role:', error);
+    res.status(400).json({ error: 'Erreur lors de la mise à jour du rôle' });
   }
 });
 
 // Delete user (admin only)
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    // Check if user is admin
+    if (req.user!.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const userId = req.params.id;
+
+    // Cannot delete self
+    if (userId === req.user!.id) {
+      return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte' });
+    }
+
+    // Check if user has active bookings
+    const activeBookings = await prisma.booking.count({
+      where: {
+        userId,
+        status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] }
+      }
+    });
+
+    if (activeBookings > 0) {
+      return res.status(400).json({ 
+        error: 'Impossible de supprimer un utilisateur avec des réservations actives' 
+      });
+    }
 
     await prisma.user.delete({
-      where: { id }
+      where: { id: userId }
     });
 
     res.json({ message: 'Utilisateur supprimé avec succès' });
   } catch (error) {
     console.error('Error deleting user:', error);
-    res.status(500).json({ error: 'Erreur lors de la suppression de l\'utilisateur' });
+    res.status(400).json({ error: 'Erreur lors de la suppression de l\'utilisateur' });
   }
 });
 

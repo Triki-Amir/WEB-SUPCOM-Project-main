@@ -9,6 +9,7 @@ async function main() {
   // Clear existing data
   console.log('🗑️  Suppression de toutes les données...');
   await prisma.notification.deleteMany();
+  await prisma.incident.deleteMany();
   await prisma.maintenance.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.vehicle.deleteMany();
@@ -42,9 +43,23 @@ async function main() {
     },
   });
 
+  // Create Client user
+  const hashedPasswordClient = await bcrypt.hash('client123', 10);
+  const client = await prisma.user.create({
+    data: {
+      email: 'client@autofleet.tn',
+      password: hashedPasswordClient,
+      name: 'Ahmed Ben Ali',
+      phone: '+21698765432',
+      address: 'Tunis, Tunisie',
+      role: 'CLIENT',
+    },
+  });
+
   console.log('✅ Utilisateurs créés');
   console.log('📧 Admin: parcadmin@autofleet.tn');
   console.log('📧 Direction: direction@autofleet.tn');
+  console.log('📧 Client: client@autofleet.tn');
 
   // Create default stations across Tunisia
   const tunisStation = await prisma.station.create({
@@ -205,7 +220,7 @@ async function main() {
       seats: 5,
       transmission: 'Manuelle',
       fuelType: 'Essence',
-      dailyRate: 45.0,
+      price: 45.0,
       status: 'AVAILABLE' as const,
       mileage: 12000,
       stationId: tunisStation.id,
@@ -220,7 +235,7 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Diesel',
-      dailyRate: 50.0,
+      price: 50.0,
       status: 'AVAILABLE' as const,
       mileage: 8000,
       stationId: tunisStation.id,
@@ -235,7 +250,7 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Essence',
-      dailyRate: 60.0,
+      price: 60.0,
       status: 'RENTED' as const,
       mileage: 25000,
       stationId: sfaxStation.id,
@@ -250,7 +265,7 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Hybride',
-      dailyRate: 70.0,
+      price: 70.0,
       status: 'AVAILABLE' as const,
       mileage: 5000,
       stationId: sousseStation.id,
@@ -265,7 +280,7 @@ async function main() {
       seats: 5,
       transmission: 'Automatique',
       fuelType: 'Diesel',
-      dailyRate: 90.0,
+      price: 90.0,
       status: 'AVAILABLE' as const,
       mileage: 3000,
       stationId: tunisStation.id,
@@ -280,7 +295,7 @@ async function main() {
       seats: 5,
       transmission: 'Manuelle',
       fuelType: 'Essence',
-      dailyRate: 40.0,
+      price: 40.0,
       status: 'MAINTENANCE' as const,
       mileage: 35000,
       stationId: sfaxStation.id,
@@ -319,7 +334,6 @@ async function main() {
       data: {
         bookingId: booking.id,
         userId: client.id,
-        title: 'Pneu crevé',
         description: 'Le pneu avant droit a crevé sur l\'autoroute A1',
         status: 'IN_PROGRESS',
         severity: 'MEDIUM',
@@ -383,7 +397,7 @@ async function main() {
 
   await prisma.notification.create({
     data: {
-      userId: admin.id,
+      userId: parcAdmin.id,
       title: 'Nouveau véhicule en maintenance',
       message: 'Dacia Sandero (TUN-2468) nécessite une révision',
       type: 'MAINTENANCE',

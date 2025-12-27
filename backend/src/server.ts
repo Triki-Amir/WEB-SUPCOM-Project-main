@@ -8,6 +8,8 @@ import stationsRoutes from './routes/stations';
 import incidentsRoutes from './routes/incidents';
 import usersRoutes from './routes/users';
 import maintenanceRoutes from './routes/maintenance';
+import notificationsRoutes from './routes/notifications';
+import analyticsRoutes from './routes/analytics';
 
 dotenv.config();
 
@@ -26,6 +28,8 @@ app.use('/api/stations', stationsRoutes);
 app.use('/api/incidents', incidentsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -7,6 +7,9 @@ CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETE
 -- CreateEnum
 CREATE TYPE "VehicleStatus" AS ENUM ('AVAILABLE', 'RENTED', 'MAINTENANCE', 'OUT_OF_SERVICE');
 
+-- CreateEnum
+CREATE TYPE "IncidentStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -37,6 +40,7 @@ CREATE TABLE "vehicles" (
     "imageUrl" TEXT,
     "status" "VehicleStatus" NOT NULL DEFAULT 'AVAILABLE',
     "mileage" INTEGER NOT NULL DEFAULT 0,
+    "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "stationId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -54,6 +58,10 @@ CREATE TABLE "stations" (
     "email" TEXT,
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
+    "capacity" INTEGER NOT NULL DEFAULT 20,
+    "availablePlaces" INTEGER NOT NULL DEFAULT 20,
+    "openingHours" TEXT NOT NULL DEFAULT '08:00 - 20:00',
+    "isOpen" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -108,6 +116,20 @@ CREATE TABLE "notifications" (
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "incidents" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "bookingId" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "severity" TEXT NOT NULL,
+    "status" "IncidentStatus" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "incidents_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -131,3 +153,9 @@ ALTER TABLE "maintenances" ADD CONSTRAINT "maintenances_vehicleId_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "incidents" ADD CONSTRAINT "incidents_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "incidents" ADD CONSTRAINT "incidents_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

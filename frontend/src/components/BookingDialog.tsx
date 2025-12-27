@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -6,6 +7,8 @@ import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Calendar, MapPin, Users, CreditCard } from "lucide-react";
+import { toast } from "sonner";
+import api from "../services/api";
 
 interface Vehicle {
   id: string;
@@ -14,6 +17,7 @@ interface Vehicle {
   image: string;
   price: number;
   seats: number;
+  stationId?: string;
 }
 
 interface BookingDialogProps {
@@ -24,14 +28,82 @@ interface BookingDialogProps {
 }
 
 export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDialogProps) {
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [dropoffLocation, setDropoffLocation] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   if (!vehicle) return null;
 
-  const days = 3;
+  const calculateDays = () => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays || 1;
+  };
+
+  const days = calculateDays();
   const totalPrice = vehicle.price * days;
+
+  const handleConfirmBooking = async () => {
+    if (!startDate || !endDate) {
+      toast.error("Veuillez sélectionner les dates de début et de fin");
+      return;
+    }
+
+    // Validate dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      toast.error("Dates invalides");
+      return;
+    }
+
+    if (start >= end) {
+      toast.error("La date de fin doit être après la date de début");
+      return;
+    }
+
+    if (!vehicle.stationId) {
+      toast.error("Station non définie pour ce véhicule");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await api.bookings.create({
+        vehicleId: vehicle.id,
+        stationId: vehicle.stationId,
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        totalPrice,
+        pickupLocation: pickupLocation || undefined,
+        dropoffLocation: dropoffLocation || undefined,
+        notes: notes || undefined,
+      });
+      toast.success("Réservation confirmée avec succès !");
+      onConfirm();
+      // Reset form
+      setStartDate("");
+      setEndDate("");
+      setPickupLocation("");
+      setDropoffLocation("");
+      setNotes("");
+    } catch (error: any) {
+      console.error("Error creating booking:", error);
+      toast.error(error.message || "Erreur lors de la création de la réservation");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Confirmer votre réservation</DialogTitle>
         </DialogHeader>
@@ -52,27 +124,8 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
                 <Users className="w-4 h-4" />
                 <span>{vehicle.seats} places</span>
               </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <h4>Détails de la location</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="w-4 h-4" />
-                <div>
-                  <div>Prise en charge</div>
-                  <div>Tunis, Tunisie</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Calendar className="w-4 h-4" />
-                <div>
-                  <div>Dates</div>
-                  <div>7 Nov - 10 Nov 2025</div>
-                </div>
+              <div className="mt-1 text-sm font-semibold">
+                {vehicle.price} TND/jour
               </div>
             </div>
           </div>
@@ -80,28 +133,62 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
           <Separator />
 
           <div className="space-y-3">
-            <h4>Informations de paiement</h4>
+            <h4>Dates de location</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startDate">Date de début *</Label>
+                <Input 
+                  id="startDate"
+                  type="datetime-local"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="endDate">Date de fin *</Label>
+                <Input 
+                  id="endDate"
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <h4>Informations supplémentaires</h4>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="cardName">Nom sur la carte</Label>
-                <Input id="cardName" placeholder="Jean Dupont" />
+                <Label htmlFor="pickupLocation">Lieu de prise en charge</Label>
+                <Input 
+                  id="pickupLocation" 
+                  placeholder="Adresse de prise en charge (optionnel)"
+                  value={pickupLocation}
+                  onChange={(e) => setPickupLocation(e.target.value)}
+                />
               </div>
               <div>
-                <Label htmlFor="cardNumber">Numéro de carte</Label>
-                <div className="relative">
-                  <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                  <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
+                <Label htmlFor="dropoffLocation">Lieu de restitution</Label>
+                <Input 
+                  id="dropoffLocation" 
+                  placeholder="Adresse de restitution (optionnel)"
+                  value={dropoffLocation}
+                  onChange={(e) => setDropoffLocation(e.target.value)}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="expiry">Expiration</Label>
-                  <Input id="expiry" placeholder="MM/AA" />
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input id="cvv" placeholder="123" type="password" />
-                </div>
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Input 
+                  id="notes" 
+                  placeholder="Notes ou demandes spéciales (optionnel)"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -110,31 +197,23 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Location ({days} jours)</span>
-              <span>{vehicle.price} DT × {days}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Assurance</span>
-              <span>45 DT</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Frais de service</span>
-              <span>15 DT</span>
+              <span>Location ({days} jour{days > 1 ? 's' : ''})</span>
+              <span>{vehicle.price} TND × {days}</span>
             </div>
             <Separator />
-            <div className="flex justify-between">
+            <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>{totalPrice + 60} DT</span>
+              <span>{totalPrice} TND</span>
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
             Annuler
           </Button>
-          <Button onClick={onConfirm}>
-            Confirmer la réservation
+          <Button onClick={handleConfirmBooking} disabled={submitting}>
+            {submitting ? "Confirmation..." : "Confirmer la réservation"}
           </Button>
         </DialogFooter>
       </DialogContent>

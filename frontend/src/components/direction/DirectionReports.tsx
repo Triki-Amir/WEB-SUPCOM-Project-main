@@ -1,9 +1,24 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { FileText, Download, Calendar, TrendingUp } from "lucide-react";
+import { FileText, Download, Calendar, TrendingUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
+
+interface StationStats {
+  name: string;
+  city: string;
+  bookingsCount: number;
+  revenue?: number;
+}
+
+interface UserStats {
+  totalUsers: number;
+  activeClients: number;
+  newThisMonth: number;
+}
 
 interface Report {
   id: string;
@@ -16,6 +31,31 @@ interface Report {
 }
 
 export function DirectionReports() {
+  const [stationStats, setStationStats] = useState<StationStats[]>([]);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadReportData();
+  }, []);
+
+  const loadReportData = async () => {
+    try {
+      setLoading(true);
+      const [stationsData, usersData] = await Promise.all([
+        api.analytics.getStationStatistics(),
+        api.analytics.getUserStatistics()
+      ]);
+      setStationStats(stationsData);
+      setUserStats(usersData);
+    } catch (error) {
+      console.error("Error loading report data:", error);
+      toast.error("Erreur lors du chargement des données");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const reports: Report[] = [
     {
       id: "1",
@@ -92,8 +132,71 @@ export function DirectionReports() {
     return <Badge className={color}>{label}</Badge>;
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Statistics Cards */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistiques des stations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stationStats.length > 0 ? (
+              <div className="space-y-3">
+                {stationStats.slice(0, 5).map((station: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{station.name}</h4>
+                      <p className="text-sm text-gray-600">{station.city}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold">{station.bookingsCount} réservations</div>
+                      <div className="text-sm text-gray-600">{station.revenue?.toFixed(2) || 0} TND</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-4 text-gray-500">Aucune donnée disponible</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistiques des utilisateurs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userStats ? (
+              <div className="space-y-4">
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">Total utilisateurs</div>
+                  <div className="text-2xl font-bold">{userStats.totalUsers || 0}</div>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">Clients actifs</div>
+                  <div className="text-2xl font-bold">{userStats.activeClients || 0}</div>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">Nouveaux ce mois</div>
+                  <div className="text-2xl font-bold">{userStats.newThisMonth || 0}</div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-4 text-gray-500">Aucune donnée disponible</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
