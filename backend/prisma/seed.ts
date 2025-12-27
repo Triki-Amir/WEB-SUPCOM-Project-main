@@ -308,7 +308,95 @@ async function main() {
 
   console.log('✅ Véhicules créés');
 
-  // Create bookings
+  // Create multiple bookings for realistic statistics
+  const allVehicles = await prisma.vehicle.findMany();
+  const bookingsData = [
+    {
+      vehicleId: allVehicles[0]?.id,
+      userId: client.id,
+      stationId: tunisStation.id,
+      startDate: new Date('2025-12-20'),
+      endDate: new Date('2025-12-23'),
+      totalPrice: 150.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Tunis Centre',
+      dropoffLocation: 'Tunis Centre',
+    },
+    {
+      vehicleId: allVehicles[1]?.id,
+      userId: client.id,
+      stationId: lac2Station.id,
+      startDate: new Date('2025-12-21'),
+      endDate: new Date('2025-12-25'),
+      totalPrice: 280.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Lac 2',
+      dropoffLocation: 'Lac 2',
+    },
+    {
+      vehicleId: allVehicles[2]?.id,
+      userId: client.id,
+      stationId: sfaxStation.id,
+      startDate: new Date('2025-12-22'),
+      endDate: new Date('2025-12-26'),
+      totalPrice: 240.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Sfax Centre',
+      dropoffLocation: 'Sfax Centre',
+    },
+    {
+      vehicleId: allVehicles[3]?.id,
+      userId: client.id,
+      stationId: sousseStation.id,
+      startDate: new Date('2025-12-23'),
+      endDate: new Date('2025-12-27'),
+      totalPrice: 280.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Sousse',
+      dropoffLocation: 'Sousse',
+    },
+    {
+      vehicleId: allVehicles[4]?.id,
+      userId: client.id,
+      stationId: hammametStation.id,
+      startDate: new Date('2025-12-24'),
+      endDate: new Date('2025-12-28'),
+      totalPrice: 360.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Hammamet',
+      dropoffLocation: 'Hammamet',
+    },
+    {
+      vehicleId: allVehicles[5]?.id,
+      userId: client.id,
+      stationId: tunisStation.id,
+      startDate: new Date('2025-12-25'),
+      endDate: new Date('2025-12-30'),
+      totalPrice: 200.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Tunis Centre',
+      dropoffLocation: 'Tunis Centre',
+    },
+    {
+      vehicleId: allVehicles[6]?.id,
+      userId: client.id,
+      stationId: sfaxStation.id,
+      startDate: new Date('2025-12-26'),
+      endDate: new Date('2025-12-29'),
+      totalPrice: 180.0,
+      status: 'COMPLETED' as const,
+      pickupLocation: 'Sfax Centre',
+      dropoffLocation: 'Sfax Centre',
+    },
+  ];
+
+  for (const bookingData of bookingsData) {
+    if (bookingData.vehicleId) {
+      await prisma.booking.create({ data: bookingData });
+    }
+  }
+
+  // Create active bookings
   const vehicleForBooking = await prisma.vehicle.findFirst({
     where: { status: 'RENTED' },
   });
@@ -319,8 +407,8 @@ async function main() {
         userId: client.id,
         vehicleId: vehicleForBooking.id,
         stationId: sfaxStation.id,
-        startDate: new Date('2025-11-10'),
-        endDate: new Date('2025-11-17'),
+        startDate: new Date('2025-12-27'),
+        endDate: new Date('2026-01-03'),
         totalPrice: 420.0,
         status: 'ACTIVE',
         pickupLocation: 'Sfax Centre',
@@ -341,21 +429,22 @@ async function main() {
     });
   }
 
-  // Create completed booking
-  const completedVehicle = await prisma.vehicle.findFirst({
-    where: { licensePlate: 'TUN-1234' },
+  // Create pending bookings
+  const availableVehicles = await prisma.vehicle.findMany({
+    where: { status: 'AVAILABLE' },
+    take: 3,
   });
 
-  if (completedVehicle) {
+  for (const vehicle of availableVehicles) {
     await prisma.booking.create({
       data: {
         userId: client.id,
-        vehicleId: completedVehicle.id,
+        vehicleId: vehicle.id,
         stationId: tunisStation.id,
-        startDate: new Date('2025-10-15'),
-        endDate: new Date('2025-10-20'),
-        totalPrice: 225.0,
-        status: 'COMPLETED',
+        startDate: new Date('2026-01-05'),
+        endDate: new Date('2026-01-10'),
+        totalPrice: vehicle.price * 5,
+        status: 'PENDING',
         pickupLocation: 'Tunis Centre',
         dropoffLocation: 'Tunis Centre',
       },
