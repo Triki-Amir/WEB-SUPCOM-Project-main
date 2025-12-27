@@ -49,18 +49,7 @@ export function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (role: string) => {
-    const emails = {
-      client: "client@autofleet.tn",
-      admin: "admin@autofleet.tn",
-      direction: "direction@autofleet.tn",
-    };
-    try {
-      await login(emails[role as keyof typeof emails], "demo123");
-    } catch (error) {
-      // Error is already handled in AuthContext
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#B8E3E9] to-[#93B1B5] flex items-center justify-center p-4">
@@ -151,43 +140,6 @@ export function LoginPage() {
                     )}
                   </Button>
                 </form>
-
-                <div className="mt-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-gray-500">Comptes de démonstration</span>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-[#4F7C82] text-[#0B2E33] hover:bg-[#B8E3E9]"
-                      onClick={() => handleDemoLogin("client")}
-                    >
-                      Client
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-[#4F7C82] text-[#0B2E33] hover:bg-[#B8E3E9]"
-                      onClick={() => handleDemoLogin("admin")}
-                    >
-                      Administrateur de parc
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-[#4F7C82] text-[#0B2E33] hover:bg-[#B8E3E9]"
-                      onClick={() => handleDemoLogin("direction")}
-                    >
-                      Direction
-                    </Button>
-                  </div>
-                </div>
               </TabsContent>
 
               <TabsContent value="register">
