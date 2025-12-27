@@ -114,6 +114,20 @@ export function AdminStats() {
     };
   });
 
+  // Get today's statistics from trends
+  const today = new Date().toISOString().split('T')[0];
+  const todayTrend = bookingTrends.find(trend => trend.date === today);
+  const todayBookings = todayTrend?.bookings || 0;
+  const todayRevenue = todayTrend?.revenue || 0;
+
+  // Calculate weekly comparison
+  const lastWeekBookings = bookingTrends.length > 0 
+    ? bookingTrends.reduce((sum, t) => sum + t.bookings, 0) / bookingTrends.length 
+    : 0;
+  const bookingsChange = lastWeekBookings > 0 
+    ? Math.round(((todayBookings - lastWeekBookings) / lastWeekBookings) * 100) 
+    : 0;
+
   // Calculate monthly revenue (aggregate by month from trends)
   const monthlyRevenue = bookingTrends.reduce((acc, trend) => {
     const date = new Date(trend.date);
@@ -153,28 +167,28 @@ export function AdminStats() {
     {
       title: "Véhicules actifs",
       value: dashboardStats.vehicles.total.toString(),
-      change: `${dashboardStats.vehicles.utilizationRate}%`,
+      change: `${dashboardStats.vehicles.utilizationRate}% utilisation`,
       trend: "up",
       icon: Car,
     },
     {
       title: "Réservations aujourd'hui",
-      value: dashboardStats.bookings.active.toString(),
-      change: `+${dashboardStats.bookings.pending} en attente`,
-      trend: "up",
+      value: todayBookings.toString(),
+      change: bookingsChange > 0 ? `+${bookingsChange}%` : `${bookingsChange}%`,
+      trend: bookingsChange >= 0 ? "up" : "down",
       icon: Users,
     },
     {
       title: "Revenu journalier",
-      value: `${Math.round(parseFloat(dashboardStats.revenue.averagePerBooking))} TND`,
-      change: `+${Math.round(dashboardStats.revenue.total / 30)}/jour`,
-      trend: "up",
+      value: `${Math.round(todayRevenue)} TND`,
+      change: `${dashboardStats.bookings.active} actives`,
+      trend: todayRevenue > 0 ? "up" : "down",
       icon: DollarSign,
     },
     {
       title: "Alertes actives",
       value: dashboardStats.incidents.open.toString(),
-      change: `${dashboardStats.bookings.pending} réservations`,
+      change: `${dashboardStats.bookings.pending} en attente`,
       trend: dashboardStats.incidents.open > 5 ? "up" : "down",
       icon: AlertCircle,
     },
