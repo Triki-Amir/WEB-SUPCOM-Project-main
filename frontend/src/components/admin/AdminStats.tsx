@@ -1,71 +1,183 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, Car, Users, DollarSign, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Car, Users, DollarSign, AlertCircle, Loader2 } from "lucide-react";
+import api from "../../services/api";
+
+interface DashboardStats {
+  vehicles: {
+    total: number;
+    available: number;
+    rented: number;
+    maintenance: number;
+    utilizationRate: string;
+  };
+  bookings: {
+    total: number;
+    pending: number;
+    active: number;
+    completed: number;
+  };
+  revenue: {
+    total: number;
+    averagePerBooking: string;
+  };
+  users: {
+    total: number;
+  };
+  stations: {
+    total: number;
+  };
+  incidents: {
+    open: number;
+  };
+}
+
+interface BookingTrend {
+  date: string;
+  bookings: number;
+  revenue: number;
+}
+
+interface StationStats {
+  id: string;
+  name: string;
+  city: string;
+  totalVehicles: number;
+  availablePlaces: number;
+  capacity: number;
+  occupancyRate: string;
+  totalBookings: number;
+  totalRevenue: number;
+  isOpen: boolean;
+}
+
+interface VehiclePerformance {
+  id: string;
+  name: string;
+  category: string;
+  station: string;
+  city: string;
+  totalBookings: number;
+  totalRevenue: number;
+  status: string;
+  mileage: number;
+}
 
 export function AdminStats() {
+  const [loading, setLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [bookingTrends, setBookingTrends] = useState<BookingTrend[]>([]);
+  const [stationStats, setStationStats] = useState<StationStats[]>([]);
+  const [vehiclePerformance, setVehiclePerformance] = useState<VehiclePerformance[]>([]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [stats, trends, stations, vehicles] = await Promise.all([
+        api.analytics.getDashboard(),
+        api.analytics.getBookingTrends(7),
+        api.analytics.getStationStatistics(),
+        api.analytics.getVehiclePerformance(),
+      ]);
+
+      setDashboardStats(stats as any);
+      setBookingTrends(trends as any);
+      setStationStats(stations as any);
+      setVehiclePerformance(vehicles as any);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !dashboardStats) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  // Calculate daily bookings from trends
+  const bookingsData = bookingTrends.map((trend, index) => {
+    const date = new Date(trend.date);
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    return {
+      name: dayNames[date.getDay()],
+      value: trend.bookings,
+    };
+  });
+
+  // Calculate monthly revenue (aggregate by month from trends)
+  const monthlyRevenue = bookingTrends.reduce((acc, trend) => {
+    const date = new Date(trend.date);
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!acc[monthKey]) {
+      acc[monthKey] = { revenue: 0, month: date };
+    }
+    acc[monthKey].revenue += trend.revenue;
+    return acc;
+  }, {} as Record<string, { revenue: number; month: Date }>);
+
+  const revenueData = Object.values(monthlyRevenue).map(item => ({
+    name: item.month.toLocaleDateString('fr-FR', { month: 'short' }),
+    value: Math.round(item.revenue),
+  }));
+
+  // Vehicle category data from performance
+  const categoryMap = vehiclePerformance.reduce((acc, vehicle) => {
+    acc[vehicle.category] = (acc[vehicle.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
+  const vehicleCategoryData = Object.entries(categoryMap).map(([name, value], index) => ({
+    name,
+    value,
+    color: colors[index % colors.length],
+  }));
+
+  // Station utilization data
+  const utilizationData = stationStats.map(station => ({
+    name: station.name,
+    value: parseFloat(station.occupancyRate),
+  }));
+
   const statsCards = [
     {
       title: "Véhicules actifs",
-      value: "32",
-      change: "+12%",
+      value: dashboardStats.vehicles.total.toString(),
+      change: `${dashboardStats.vehicles.utilizationRate}%`,
       trend: "up",
       icon: Car,
     },
     {
       title: "Réservations aujourd'hui",
-      value: "18",
-      change: "+5%",
+      value: dashboardStats.bookings.active.toString(),
+      change: `+${dashboardStats.bookings.pending} en attente`,
       trend: "up",
       icon: Users,
     },
     {
       title: "Revenu journalier",
-      value: "2,450 TND",
-      change: "+8%",
+      value: `${Math.round(parseFloat(dashboardStats.revenue.averagePerBooking))} TND`,
+      change: `+${Math.round(dashboardStats.revenue.total / 30)}/jour`,
       trend: "up",
       icon: DollarSign,
     },
     {
       title: "Alertes actives",
-      value: "4",
-      change: "-2",
-      trend: "down",
+      value: dashboardStats.incidents.open.toString(),
+      change: `${dashboardStats.bookings.pending} réservations`,
+      trend: dashboardStats.incidents.open > 5 ? "up" : "down",
       icon: AlertCircle,
     },
-  ];
-
-  const bookingsData = [
-    { name: "Lun", value: 12 },
-    { name: "Mar", value: 15 },
-    { name: "Mer", value: 18 },
-    { name: "Jeu", value: 14 },
-    { name: "Ven", value: 22 },
-    { name: "Sam", value: 28 },
-    { name: "Dim", value: 25 },
-  ];
-
-  const revenueData = [
-    { name: "Jan", value: 45000 },
-    { name: "Fév", value: 52000 },
-    { name: "Mar", value: 48000 },
-    { name: "Avr", value: 61000 },
-    { name: "Mai", value: 55000 },
-    { name: "Juin", value: 67000 },
-  ];
-
-  const vehicleCategoryData = [
-    { name: "Compacte", value: 12, color: "#3b82f6" },
-    { name: "Berline", value: 8, color: "#10b981" },
-    { name: "SUV", value: 7, color: "#f59e0b" },
-    { name: "Électrique", value: 5, color: "#8b5cf6" },
-  ];
-
-  const utilizationData = [
-    { name: "Tunis Centre", value: 85 },
-    { name: "Lac 2", value: 72 },
-    { name: "Sfax Centre", value: 68 },
-    { name: "Sousse", value: 54 },
-    { name: "Aéroport", value: 91 },
   ];
 
   return (

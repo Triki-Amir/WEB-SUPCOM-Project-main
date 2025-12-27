@@ -7,10 +7,14 @@ const router = Router();
 // Get dashboard statistics (admin and direction only)
 router.get('/dashboard', authenticate, async (req: AuthRequest, res) => {
   try {
+    console.log('📊 Dashboard stats request from:', req.user?.email);
+    
     // Check if user is admin or direction
     if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
       return res.status(403).json({ error: 'Accès non autorisé' });
     }
+
+    console.log('✅ User authorized, fetching stats...');
 
     // Get various statistics
     const [
@@ -44,6 +48,8 @@ router.get('/dashboard', authenticate, async (req: AuthRequest, res) => {
       prisma.incident.count({ where: { status: { in: ['PENDING', 'IN_PROGRESS'] } } })
     ]);
 
+    console.log('✅ Stats fetched successfully');
+
     res.json({
       vehicles: {
         total: totalVehicles,
@@ -73,7 +79,7 @@ router.get('/dashboard', authenticate, async (req: AuthRequest, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    console.error('❌ Error fetching dashboard stats:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des statistiques' });
   }
 });
