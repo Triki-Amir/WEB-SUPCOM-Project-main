@@ -3,7 +3,6 @@ import { SearchPanel } from "../SearchPanel";
 import { VehicleCard } from "../VehicleCard";
 import { BookingDialog } from "../BookingDialog";
 import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { MapPin, Search, Loader2, Car } from "lucide-react";
@@ -54,8 +53,8 @@ export function ClientSearch() {
         api.vehicles.getAll({ available: true }),
         api.stations.getAll()
       ]);
-      setVehicles(vehiclesData);
-      setStations(stationsData);
+      setVehicles(vehiclesData as Vehicle[]);
+      setStations(stationsData as Station[]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Erreur lors du chargement des données");
@@ -166,16 +165,14 @@ export function ClientSearch() {
       {selectedVehicle && (
         <BookingDialog
           open={bookingDialogOpen}
-          onOpenChange={setBookingDialogOpen}
+          onClose={() => setBookingDialogOpen(false)}
           vehicle={{
             id: selectedVehicle.id,
             name: `${selectedVehicle.brand} ${selectedVehicle.model}`,
             category: selectedVehicle.category,
             image: selectedVehicle.imageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400",
             price: 50,
-            seats: selectedVehicle.seats,
-            transmission: selectedVehicle.transmission,
-            fuel: selectedVehicle.fuelType
+            seats: selectedVehicle.seats
           }}
           onConfirm={handleConfirmBooking}
         />
