@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -6,8 +6,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "../ui/dialog";
-import { MapPin, Plus, Edit, Car, Clock } from "lucide-react";
+import { MapPin, Plus, Edit, Car, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { stationService } from "../../services/api";
 
 interface Station {
   id: string;
@@ -16,66 +17,81 @@ interface Station {
   city: string;
   capacity: number;
   availableSpots: number;
-  vehicles: number;
+  totalVehicles: number;
   isOpen: boolean;
   openingHours: string;
+  phone: string;
+  email?: string;
+}
+
+interface NewStationForm {
+  name: string;
+  address: string;
+  city: string;
+  capacity: number;
+  openingHours: string;
+  phone: string;
+  email: string;
 }
 
 export function AdminStations() {
+  const [stations, setStations] = useState<Station[]>([]);
+  const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
+  const [newStation, setNewStation] = useState<NewStationForm>({
+    name: "",
+    address: "",
+    city: "",
+    capacity: 20,
+    openingHours: "08:00 - 20:00",
+    phone: "",
+    email: "",
+  });
 
-  const stations: Station[] = [
-    {
-      id: "1",
-      name: "Tunis Centre",
-      address: "Avenue Habib Bourguiba",
-      city: "Tunis",
-      capacity: 20,
-      availableSpots: 8,
-      vehicles: 12,
-      isOpen: true,
-      openingHours: "07:00 - 22:00",
-    },
-    {
-      id: "2",
-      name: "Lac 2",
-      address: "Les Berges du Lac",
-      city: "Tunis",
-      capacity: 15,
-      availableSpots: 7,
-      vehicles: 8,
-      isOpen: true,
-      openingHours: "08:00 - 20:00",
-    },
-    {
-      id: "3",
-      name: "Sfax Centre",
-      address: "Avenue Hedi Chaker",
-      city: "Sfax",
-      capacity: 18,
-      availableSpots: 8,
-      vehicles: 10,
-      isOpen: true,
-      openingHours: "07:00 - 21:00",
-    },
-    {
-      id: "4",
-      name: "Sousse Ville",
-      address: "Boulevard de la Corniche",
-      city: "Sousse",
-      capacity: 12,
-      availableSpots: 5,
-      vehicles: 7,
-      isOpen: false,
-      openingHours: "08:00 - 20:00",
-    },
-  ];
+  // Fetch stations on component mount
+  useEffect(() => {
+    fetchStations();
+  }, []);
 
-  const handleAddStation = () => {
-    toast.success("Station ajoutée avec succès");
-    setAddDialogOpen(false);
+  const fetchStations = async () => {
+    try {
+      setLoading(true);
+      const data = await stationService.getAll();
+      setStations(data);
+    } catch (error) {
+      toast.error("Erreur lors du chargement des stations");
+      console.error("Error fetching stations:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddStation = async () => {
+    try {
+      if (!newStation.name || !newStation.address || !newStation.city || !newStation.phone) {
+        toast.error("Veuillez remplir tous les champs requis");
+        return;
+      }
+
+      await stationService.create(newStation);
+      toast.success("Station ajoutée avec succès");
+      setAddDialogOpen(false);
+      setNewStation({
+        name: "",
+        address: "",
+        city: "",
+        capacity: 20,
+        openingHours: "08:00 - 20:00",
+        phone: "",
+        email: "",
+      });
+      fetchStations();
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout de la station");
+      console.error("Error adding station:", error);
+    }
   };
 
   const handleEditStation = (station: Station) => {
@@ -83,13 +99,32 @@ export function AdminStations() {
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    toast.success("Station mise à jour");
-    setEditDialogOpen(false);
+  const handleSaveEdit = async () => {
+    if (!selectedStation) return;
+
+    try {
+      await stationService.update(selectedStation.id, {
+        capacity: selectedStation.capacity,
+        openingHours: selectedStation.openingHours,
+      });
+      toast.success("Station mise à jour");
+      setEditDialogOpen(false);
+      fetchStations();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour de la station");
+      console.error("Error updating station:", error);
+    }
   };
 
-  const handleToggleStation = (stationId: string, isOpen: boolean) => {
-    toast.success(isOpen ? "Station ouverte" : "Station fermée");
+  const handleToggleStation = async (stationId: string) => {
+    try {
+      await stationService.toggle(stationId);
+      toast.success("Statut de la station mis à jour");
+      fetchStations();
+    } catch (error) {
+      toast.error("Erreur lors du changement de statut");
+      console.error("Error toggling station:", error);
+    }
   };
 
   const getOccupancyColor = (available: number, total: number) => {
@@ -98,6 +133,14 @@ export function AdminStations() {
     if (percentage > 20) return "bg-yellow-500";
     return "bg-red-500";
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -118,24 +161,62 @@ export function AdminStations() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Nom de la station</Label>
-                    <Input placeholder="ex: Tunis Centre" />
+                    <Label>Nom de la station *</Label>
+                    <Input 
+                      placeholder="ex: Tunis Centre" 
+                      value={newStation.name}
+                      onChange={(e) => setNewStation({ ...newStation, name: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label>Adresse</Label>
-                    <Input placeholder="ex: Avenue Habib Bourguiba" />
+                    <Label>Adresse *</Label>
+                    <Input 
+                      placeholder="ex: Avenue Habib Bourguiba" 
+                      value={newStation.address}
+                      onChange={(e) => setNewStation({ ...newStation, address: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label>Ville</Label>
-                    <Input placeholder="ex: Tunis" />
+                    <Label>Ville *</Label>
+                    <Input 
+                      placeholder="ex: Tunis" 
+                      value={newStation.city}
+                      onChange={(e) => setNewStation({ ...newStation, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Téléphone *</Label>
+                    <Input 
+                      placeholder="ex: +216 71 123 456" 
+                      value={newStation.phone}
+                      onChange={(e) => setNewStation({ ...newStation, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input 
+                      type="email"
+                      placeholder="ex: station@autofleet.tn" 
+                      value={newStation.email}
+                      onChange={(e) => setNewStation({ ...newStation, email: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Capacité</Label>
-                    <Input type="number" placeholder="ex: 20" />
+                    <Input 
+                      type="number" 
+                      placeholder="ex: 20" 
+                      value={newStation.capacity}
+                      onChange={(e) => setNewStation({ ...newStation, capacity: parseInt(e.target.value) || 20 })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Horaires d'ouverture</Label>
-                    <Input placeholder="ex: 07:00 - 22:00" />
+                    <Input 
+                      placeholder="ex: 07:00 - 22:00" 
+                      value={newStation.openingHours}
+                      onChange={(e) => setNewStation({ ...newStation, openingHours: e.target.value })}
+                    />
                   </div>
                 </div>
                 <DialogFooter>
@@ -196,7 +277,7 @@ export function AdminStations() {
                         <Car className="w-4 h-4" />
                         Véhicules
                       </span>
-                      <span>{station.vehicles}</span>
+                      <span>{station.totalVehicles}</span>
                     </div>
                   </div>
 
@@ -204,9 +285,7 @@ export function AdminStations() {
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={station.isOpen}
-                        onCheckedChange={(checked) =>
-                          handleToggleStation(station.id, checked)
-                        }
+                        onCheckedChange={() => handleToggleStation(station.id)}
                       />
                       <span className="text-sm">
                         {station.isOpen ? "Ouvrir" : "Fermer"}
@@ -237,11 +316,24 @@ export function AdminStations() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Capacité</Label>
-                <Input type="number" defaultValue={selectedStation.capacity} />
+                <Input 
+                  type="number" 
+                  value={selectedStation.capacity}
+                  onChange={(e) => setSelectedStation({ 
+                    ...selectedStation, 
+                    capacity: parseInt(e.target.value) || 20 
+                  })}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Horaires d'ouverture</Label>
-                <Input defaultValue={selectedStation.openingHours} />
+                <Input 
+                  value={selectedStation.openingHours}
+                  onChange={(e) => setSelectedStation({ 
+                    ...selectedStation, 
+                    openingHours: e.target.value 
+                  })}
+                />
               </div>
             </div>
           )}
