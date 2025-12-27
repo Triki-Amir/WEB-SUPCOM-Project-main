@@ -46,6 +46,33 @@ async function main() {
   console.log('📧 Admin: parcadmin@autofleet.tn');
   console.log('📧 Direction: direction@autofleet.tn');
 
+  // Create default stations
+  const tunisStation = await prisma.station.create({
+    data: {
+      name: 'Station Tunis Centre',
+      city: 'Tunis',
+      address: 'Avenue Habib Bourguiba, Tunis 1001',
+      phone: '+216 71 123 456',
+      email: 'tunis@autofleet.tn',
+      latitude: 36.8065,
+      longitude: 10.1815,
+    },
+  });
+
+  const sfaxStation = await prisma.station.create({
+    data: {
+      name: 'Station Sfax',
+      city: 'Sfax',
+      address: 'Route de Tunis, Sfax 3000',
+      phone: '+216 74 456 789',
+      email: 'sfax@autofleet.tn',
+      latitude: 34.7406,
+      longitude: 10.7603,
+    },
+  });
+
+  console.log('✅ Stations créées');
+
   console.log('🎉 Seed terminé avec succès!');
   console.log('\nComptes créés:');
   console.log('Admin de Parc: parcadmin@autofleet.tn / parcadmin123');
