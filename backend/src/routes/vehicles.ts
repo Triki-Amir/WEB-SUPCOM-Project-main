@@ -54,12 +54,42 @@ router.get('/:id', async (req, res) => {
 // Create vehicle (admin only)
 router.post('/', authenticate, async (req, res) => {
   try {
-    const vehicle = await prisma.vehicle.create({
-      data: req.body,
+    const { stationId } = req.body;
+
+    // Check if station has available places
+    const station = await prisma.station.findUnique({
+      where: { id: stationId },
     });
 
-    res.status(201).json(vehicle);
+    if (!station) {
+      return res.status(404).json({ error: 'Station non trouvée' });
+    }
+
+    if (station.availablePlaces <= 0) {
+      return res.status(400).json({ error: 'Aucune place disponible dans cette station' });
+    }
+
+    // Create vehicle and decrement available places in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const vehicle = await tx.vehicle.create({
+        data: req.body,
+      });
+
+      await tx.station.update({
+        where: { id: stationId },
+        data: {
+          availablePlaces: {
+            decrement: 1,
+          },
+        },
+      });
+
+      return vehicle;
+    });
+
+    res.status(201).json(result);
   } catch (error) {
+    console.error('Error creating vehicle:', error);
     res.status(400).json({ error: 'Erreur lors de la création du véhicule' });
   }
 });
@@ -67,14 +97,103 @@ router.post('/', authenticate, async (req, res) => {
 // Update vehicle (admin only)
 router.put('/:id', authenticate, async (req, res) => {
   try {
+    const { stationId } = req.body;
+    const vehicleId = req.params.id;
+
+    // Get current vehicle to check if station is changing
+    const currentVehicle = await prisma.vehicle.findUnique({
+      where: { id: vehicleId },
+    });
+
+    if (!currentVehicle) {
+      return res.status(404).json({ error: 'Véhicule non trouvé' });
+    }
+
+    // If station is changing
+    if (stationId && stationId !== currentVehicle.stationId) {
+      const newStation = await prisma.station.findUnique({
+        where: { id: stationId },
+      });
+
+      if (!newStation) {
+        return res.status(404).json({ error: 'Nouvelle station non trouvée' });
+      }
+
+      if (newStation.availablePlaces <= 0) {
+        return res.status(400).json({ error: 'Aucune place disponible dans la nouvelle station' });
+      }
+
+      // Update vehicle and adjust station places in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Increment old station
+        await tx.station.update({
+          where: { id: currentVehicle.stationId },
+          data: { availablePlaces: { increment: 1 } },
+        });
+
+        // Decrement new station
+        await tx.station.update({
+          where: { id: stationId },
+          data: { availablePlaces: { decrement: 1 } },
+        });
+
+        // Update vehicle
+        const vehicle = await tx.vehicle.update({
+          where: { id: vehicleId },
+          data: req.body,
+        });
+
+        return vehicle;
+      });
+
+      return res.json(result);
+    }
+
+    // If station is not changing, just update the vehicle
     const vehicle = await prisma.vehicle.update({
-      where: { id: req.params.id },
+      where: { id: vehicleId },
       data: req.body,
     });
 
     res.json(vehicle);
   } catch (error) {
+    console.error('Error updating vehicle:', error);
     res.status(400).json({ error: 'Erreur lors de la mise à jour du véhicule' });
+  }
+});
+
+// Delete vehicle (admin only)
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const vehicleId = req.params.id;
+
+    // Get vehicle to know which station to update
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id: vehicleId },
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({ error: 'Véhicule non trouvé' });
+    }
+
+    // Delete vehicle and increment station available places
+    await prisma.$transaction(async (tx) => {
+      await tx.vehicle.delete({
+        where: { id: vehicleId },
+      });
+
+      await tx.station.update({
+        where: { id: vehicle.stationId },
+        data: {
+          availablePlaces: { increment: 1 },
+        },
+      });
+    });
+
+    res.json({ message: 'Véhicule supprimé avec succès' });
+  } catch (error) {
+    console.error('Error deleting vehicle:', error);
+    res.status(400).json({ error: 'Erreur lors de la suppression du véhicule' });
   }
 });
 

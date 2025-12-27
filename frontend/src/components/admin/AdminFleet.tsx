@@ -25,6 +25,7 @@ interface Vehicle {
   imageUrl?: string;
   status: "AVAILABLE" | "RENTED" | "MAINTENANCE" | "OUT_OF_SERVICE";
   mileage: number;
+  price: number;
   stationId: string;
   station?: {
     id: string;
@@ -59,6 +60,7 @@ export function AdminFleet() {
   const [fuelType, setFuelType] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [mileage, setMileage] = useState(0);
+  const [price, setPrice] = useState(0);
   const [stationId, setStationId] = useState("");
 
   // Form state for editing
@@ -115,11 +117,12 @@ export function AdminFleet() {
     setFuelType("");
     setImageUrl("");
     setMileage(0);
+    setPrice(0);
     setStationId("");
   };
 
   const handleAddVehicle = async () => {
-    if (!brand || !model || !licensePlate || !stationId || !category || !transmission || !fuelType) {
+    if (!brand || !model || !licensePlate || !stationId || !category || !transmission || !fuelType || !price) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -137,6 +140,7 @@ export function AdminFleet() {
         fuelType,
         imageUrl,
         mileage,
+        price,
         stationId,
         status: "AVAILABLE"
       });
@@ -254,6 +258,10 @@ export function AdminFleet() {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label>Prix par jour (TND) *</Label>
+                      <Input type="number" step="0.01" placeholder="ex: 150.00" value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} />
+                    </div>
+                    <div className="space-y-2">
                       <Label>Transmission *</Label>
                       <Select value={transmission} onValueChange={setTransmission}>
                         <SelectTrigger>
@@ -350,6 +358,9 @@ export function AdminFleet() {
                       </div>
                       <div className="text-xs text-gray-600">
                         {vehicle.category} • {vehicle.seats} places • {vehicle.transmission}
+                      </div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        {vehicle.price} TND/jour
                       </div>
                     </div>
 

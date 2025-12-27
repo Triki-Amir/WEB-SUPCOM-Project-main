@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -25,6 +25,7 @@ import {
   Car
 } from "lucide-react";
 import { motion } from "motion/react";
+import { stationService } from "../services/api";
 
 interface HomePageProps {
   onGetStarted: () => void;
@@ -33,6 +34,34 @@ interface HomePageProps {
 export function HomePage({ onGetStarted }: HomePageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+  const [cities, setCities] = useState<string[]>([
+    "Tunis",
+    "Sfax",
+    "Sousse",
+    "Monastir",
+    "Nabeul",
+    "Hammamet",
+    "Djerba",
+    "Tozeur",
+  ]);
+
+  // Fetch cities from stations
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const stations = await stationService.getAll();
+        // Extract unique cities from stations
+        const uniqueCities = Array.from(new Set(stations.map((s: any) => s.city)));
+        if (uniqueCities.length > 0) {
+          setCities(uniqueCities);
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        // Keep default cities if API fails
+      }
+    };
+    fetchCities();
+  }, []);
 
   const features = [
     {
@@ -99,17 +128,6 @@ export function HomePage({ onGetStarted }: HomePageProps) {
       content: "Parfait pour découvrir la Tunisie. Prix raisonnables et voitures confortables.",
       rating: 5,
     },
-  ];
-
-  const cities = [
-    "Tunis",
-    "Sfax",
-    "Sousse",
-    "Monastir",
-    "Nabeul",
-    "Hammamet",
-    "Djerba",
-    "Tozeur",
   ];
 
   const scrollToSection = (sectionId: string) => {

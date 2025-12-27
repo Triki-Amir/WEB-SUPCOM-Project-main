@@ -215,6 +215,54 @@ export const stationService = {
   getById: async (id: string) => {
     return apiRequest(`/stations/${id}`);
   },
+
+  /**
+   * Create new station (admin only)
+   */
+  create: async (stationData: {
+    name: string;
+    city: string;
+    address: string;
+    phone: string;
+    email?: string;
+    latitude?: number;
+    longitude?: number;
+    capacity?: number;
+    openingHours?: string;
+  }) => {
+    return apiRequest('/stations', {
+      method: 'POST',
+      body: JSON.stringify(stationData),
+    });
+  },
+
+  /**
+   * Update station (admin only)
+   */
+  update: async (id: string, stationData: any) => {
+    return apiRequest(`/stations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(stationData),
+    });
+  },
+
+  /**
+   * Toggle station status (admin only)
+   */
+  toggle: async (id: string) => {
+    return apiRequest(`/stations/${id}/toggle`, {
+      method: 'PATCH',
+    });
+  },
+
+  /**
+   * Delete station (admin only)
+   */
+  delete: async (id: string) => {
+    return apiRequest(`/stations/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 /**

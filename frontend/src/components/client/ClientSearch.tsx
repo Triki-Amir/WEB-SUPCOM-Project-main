@@ -19,6 +19,7 @@ interface Vehicle {
   transmission: string;
   fuelType: string;
   status: string;
+  price: number;
   stationId: string;
   station?: {
     name: string;
@@ -106,7 +107,7 @@ export function ClientSearch() {
                     name={`${vehicle.brand} ${vehicle.model}`}
                     category={vehicle.category}
                     image={vehicle.imageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400"}
-                    price={50}
+                    price={vehicle.price}
                     seats={vehicle.seats}
                     transmission={vehicle.transmission}
                     fuel={vehicle.fuelType}

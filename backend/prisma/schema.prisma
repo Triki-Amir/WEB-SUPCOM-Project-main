@@ -62,6 +62,7 @@ model Vehicle {
   imageUrl    String?
   status      VehicleStatus @default(AVAILABLE)
   mileage     Int           @default(0)
+  price       Float         @default(0)
   stationId   String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -74,16 +75,20 @@ model Vehicle {
 }
 
 model Station {
-  id        String   @id @default(uuid())
-  name      String
-  city      String
-  address   String
-  phone     String
-  email     String?
-  latitude  Float?
-  longitude Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(uuid())
+  name            String
+  city            String
+  address         String
+  phone           String
+  email           String?
+  latitude        Float?
+  longitude       Float?
+  capacity        Int      @default(20)
+  availablePlaces Int      @default(20)
+  openingHours    String   @default("08:00 - 20:00")
+  isOpen          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   vehicles Vehicle[]
   bookings Booking[]
