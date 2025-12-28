@@ -563,6 +563,34 @@ export const analyticsService = {
   getUserStatistics: async () => {
     return apiRequest('/analytics/users/statistics');
   },
+
+  /**
+   * Get revenue by category (admin and direction only)
+   */
+  getRevenueByCategory: async () => {
+    return apiRequest('/analytics/revenue/by-category');
+  },
+
+  /**
+   * Get revenue by city (admin and direction only)
+   */
+  getRevenueByCity: async () => {
+    return apiRequest('/analytics/revenue/by-city');
+  },
+
+  /**
+   * Get bookings by weekday (admin and direction only)
+   */
+  getBookingsByWeekday: async () => {
+    return apiRequest('/analytics/bookings/by-weekday');
+  },
+
+  /**
+   * Get monthly revenue trends (admin and direction only)
+   */
+  getMonthlyTrends: async () => {
+    return apiRequest('/analytics/revenue/monthly-trends');
+  },
 };
 
 // Export all services as a single object for convenience

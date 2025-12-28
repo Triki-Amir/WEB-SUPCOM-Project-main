@@ -13,10 +13,36 @@ interface DashboardStats {
   activeBookings: number;
   totalUsers: number;
   totalIncidents: number;
+  availableVehicles?: number;
+  rentedVehicles?: number;
+  maintenanceVehicles?: number;
+  utilizationRate?: number;
+}
+
+interface MonthlyData {
+  month: string;
+  revenue: number;
+  bookings: number;
+}
+
+interface CityPerformance {
+  city: string;
+  totalRevenue: number;
+  totalVehicles: number;
+  occupancyRate: string;
+}
+
+interface TopVehicle {
+  name: string;
+  totalBookings: number;
+  totalRevenue: number;
 }
 
 export function DirectionOverview() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [cityPerformance, setCityPerformance] = useState<CityPerformance[]>([]);
+  const [topVehicles, setTopVehicles] = useState<TopVehicle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,8 +52,42 @@ export function DirectionOverview() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await api.analytics.getDashboard();
-      setStats(data);
+      const [dashboardData, monthlyTrends, stationStats, vehiclePerformance] = await Promise.all([
+        api.analytics.getDashboard(),
+        api.analytics.getMonthlyTrends(),
+        api.analytics.getStationStatistics(),
+        api.analytics.getVehiclePerformance()
+      ]);
+      
+      // Transform dashboard stats
+      const transformedStats: DashboardStats = {
+        totalVehicles: dashboardData.vehicles?.total || 0,
+        totalBookings: dashboardData.bookings?.total || 0,
+        totalRevenue: dashboardData.revenue?.total || 0,
+        activeBookings: dashboardData.bookings?.active || 0,
+        totalUsers: dashboardData.users?.total || 0,
+        totalIncidents: dashboardData.incidents?.open || 0,
+        availableVehicles: dashboardData.vehicles?.available || 0,
+        rentedVehicles: dashboardData.vehicles?.rented || 0,
+        maintenanceVehicles: dashboardData.vehicles?.maintenance || 0,
+        utilizationRate: parseFloat(dashboardData.vehicles?.utilizationRate || '0'),
+      };
+      
+      setStats(transformedStats);
+      setMonthlyData(monthlyTrends as MonthlyData[]);
+      setCityPerformance(stationStats as CityPerformance[]);
+      
+      // Get top 3 vehicles
+      const topThree = (vehiclePerformance as any[])
+        .sort((a, b) => b.totalRevenue - a.totalRevenue)
+        .slice(0, 3)
+        .map(v => ({
+          name: v.name,
+          totalBookings: v.totalBookings,
+          totalRevenue: v.totalRevenue
+        }));
+      setTopVehicles(topThree);
+      
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       toast.error("Erreur lors du chargement des statistiques");
@@ -104,26 +164,17 @@ export function DirectionOverview() {
     },
   ];
 
-  const revenueData = [
-    { month: "Jan", revenue: 45000, bookings: 320, costs: 28000 },
-    { month: "Fév", revenue: 52000, bookings: 380, costs: 30000 },
-    { month: "Mar", revenue: 48000, bookings: 350, costs: 29000 },
-    { month: "Avr", revenue: 61000, bookings: 420, costs: 32000 },
-    { month: "Mai", revenue: 55000, bookings: 390, costs: 31000 },
-    { month: "Juin", revenue: 67340, bookings: 450, costs: 35000 },
-  ];
-
-  const cityPerformance = [
-    { city: "Tunis", revenue: 35000, utilization: 85 },
-    { city: "Sfax", revenue: 18000, utilization: 72 },
-    { city: "Sousse", revenue: 10000, utilization: 68 },
-    { city: "Monastir", revenue: 4340, utilization: 54 },
-  ];
+  // Enrichir les données mensuelles avec des coûts estimés (70% du revenu)
+  const revenueDataWithCosts = monthlyData.map(item => ({
+    month: item.month,
+    revenue: item.revenue,
+    bookings: item.bookings,
+    costs: Math.round(item.revenue * 0.55) // Estimation des coûts à 55% du revenu
+  }));
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpiCards.map((kpi, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">{kpiCards.map((kpi, index) => (
           <Card key={index}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-3">
@@ -154,34 +205,38 @@ export function DirectionOverview() {
             </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#3b82f6"
-                  fill="#3b82f6"
-                  fillOpacity={0.6}
-                  name="Revenu (TND)"
-                />
-                <Area
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="bookings"
-                  stroke="#10b981"
-                  fill="#10b981"
-                  fillOpacity={0.6}
-                  name="Réservations"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {monthlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Legend />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
+                    fillOpacity={0.6}
+                    name="Revenu (TND)"
+                  />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="bookings"
+                    stroke="#10b981"
+                    fill="#10b981"
+                    fillOpacity={0.6}
+                    name="Réservations"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+            )}
           </CardContent>
         </Card>
 
@@ -190,17 +245,21 @@ export function DirectionOverview() {
             <CardTitle>Rentabilité mensuelle</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="revenue" fill="#10b981" name="Revenu" />
-                <Bar dataKey="costs" fill="#ef4444" name="Coûts" />
-              </BarChart>
-            </ResponsiveContainer>
+            {revenueDataWithCosts.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={revenueDataWithCosts}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="#10b981" name="Revenu" />
+                  <Bar dataKey="costs" fill="#ef4444" name="Coûts" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+            )}
           </CardContent>
         </Card>
 
@@ -209,16 +268,20 @@ export function DirectionOverview() {
             <CardTitle>Performance par ville</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={cityPerformance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="city" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="revenue" fill="#8b5cf6" name="Revenu (TND)" />
-              </BarChart>
-            </ResponsiveContainer>
+            {cityPerformance.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={cityPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="city" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="totalRevenue" fill="#8b5cf6" name="Revenu (TND)" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+            )}
           </CardContent>
         </Card>
 
@@ -227,25 +290,32 @@ export function DirectionOverview() {
             <CardTitle>Taux d'utilisation par ville</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {cityPerformance.map((city) => (
-                <div key={city.city}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span>{city.city}</span>
-                    <span className="text-sm">{city.utilization}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${
-                        city.utilization > 75 ? "bg-green-500" :
-                        city.utilization > 60 ? "bg-yellow-500" : "bg-red-500"
-                      }`}
-                      style={{ width: `${city.utilization}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            {cityPerformance.length > 0 ? (
+              <div className="space-y-4">
+                {cityPerformance.map((city) => {
+                  const utilization = parseFloat(city.occupancyRate);
+                  return (
+                    <div key={city.city}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span>{city.city}</span>
+                        <span className="text-sm">{city.occupancyRate}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            utilization > 75 ? "bg-green-500" :
+                            utilization > 60 ? "bg-yellow-500" : "bg-red-500"
+                          }`}
+                          style={{ width: `${city.occupancyRate}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -256,23 +326,23 @@ export function DirectionOverview() {
             <CardTitle>Top véhicules</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { name: "Tesla Model 3", bookings: 45, revenue: 5400 },
-                { name: "Peugeot 3008", bookings: 38, revenue: 3230 },
-                { name: "Renault Clio", bookings: 35, revenue: 1575 },
-              ].map((vehicle, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <div>{vehicle.name}</div>
-                    <div className="text-sm text-gray-600">{vehicle.bookings} réservations</div>
+            {topVehicles.length > 0 ? (
+              <div className="space-y-3">
+                {topVehicles.map((vehicle, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div>{vehicle.name}</div>
+                      <div className="text-sm text-gray-600">{vehicle.totalBookings} réservations</div>
+                    </div>
+                    <div className="text-right">
+                      <div>{Math.round(vehicle.totalRevenue)} TND</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div>{vehicle.revenue} TND</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+            )}
           </CardContent>
         </Card>
 

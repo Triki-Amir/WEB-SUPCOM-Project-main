@@ -279,4 +279,221 @@ router.get('/users/statistics', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// Get revenue by category (admin and direction only)
+router.get('/revenue/by-category', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const vehicles = await prisma.vehicle.groupBy({
+      by: ['category'],
+      _sum: {
+        pricePerDay: true
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    const bookingsByCategory = await prisma.booking.findMany({
+      where: { status: 'COMPLETED' },
+      include: {
+        vehicle: {
+          select: { category: true }
+        }
+      }
+    });
+
+    const categoryRevenue = vehicles.map(cat => {
+      const revenue = bookingsByCategory
+        .filter(b => b.vehicle.category === cat.category)
+        .reduce((sum, b) => sum + b.totalPrice, 0);
+      return {
+        category: cat.category,
+        revenue,
+        count: cat._count.id
+      };
+    });
+
+    const totalRevenue = categoryRevenue.reduce((sum, cat) => sum + cat.revenue, 0);
+    
+    const result = categoryRevenue.map(cat => ({
+      category: cat.category,
+      revenue: cat.revenue,
+      percentage: totalRevenue > 0 ? parseFloat(((cat.revenue / totalRevenue) * 100).toFixed(1)) : 0
+    }));
+
+    res.json(result.length > 0 ? result : []);
+  } catch (error) {
+    console.error('Error fetching revenue by category:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des revenus par catégorie', details: (error as Error).message });
+  }
+});
+
+// Get revenue by city (admin and direction only)
+router.get('/revenue/by-city', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const stations = await prisma.station.findMany({
+      include: {
+        bookings: {
+          where: {
+            status: 'COMPLETED',
+            createdAt: { gte: threeMonthsAgo }
+          },
+          select: {
+            totalPrice: true,
+            createdAt: true
+          }
+        }
+      }
+    });
+
+    if (stations.length === 0) {
+      return res.json([]);
+    }
+
+    const cityRevenue = new Map<string, { q1: number; q2: number }>();
+
+    stations.forEach(station => {
+      const sixWeeksAgo = new Date();
+      sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
+
+      const q1Revenue = station.bookings
+        .filter(b => b.createdAt < sixWeeksAgo)
+        .reduce((sum, b) => sum + b.totalPrice, 0);
+      
+      const q2Revenue = station.bookings
+        .filter(b => b.createdAt >= sixWeeksAgo)
+        .reduce((sum, b) => sum + b.totalPrice, 0);
+
+      const existing = cityRevenue.get(station.city) || { q1: 0, q2: 0 };
+      existing.q1 += q1Revenue;
+      existing.q2 += q2Revenue;
+      cityRevenue.set(station.city, existing);
+    });
+
+    const result = Array.from(cityRevenue.entries()).map(([city, data]) => ({
+      city,
+      q1: Math.round(data.q1),
+      q2: Math.round(data.q2)
+    }));
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching revenue by city:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des revenus par ville', details: (error as Error).message });
+  }
+});
+
+// Get bookings by weekday (admin and direction only)
+router.get('/bookings/by-weekday', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo }
+      },
+      select: {
+        createdAt: true
+      }
+    });
+
+    const weekdayMap = new Map<number, number>();
+    for (let i = 0; i < 7; i++) weekdayMap.set(i, 0);
+
+    bookings.forEach(booking => {
+      const day = booking.createdAt.getDay();
+      weekdayMap.set(day, (weekdayMap.get(day) || 0) + 1);
+    });
+
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const result = Array.from(weekdayMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([day, count]) => ({
+        day: dayNames[day],
+        bookings: count
+      }));
+
+    // Reorder to start with Monday
+    const reordered = [
+      result[1], // Lun
+      result[2], // Mar
+      result[3], // Mer
+      result[4], // Jeu
+      result[5], // Ven
+      result[6], // Sam
+      result[0]  // Dim
+    ];
+
+    res.json(reordered);
+  } catch (error) {
+    console.error('Error fetching bookings by weekday:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des réservations par jour', details: (error as Error).message });
+  }
+});
+
+// Get monthly trends (admin and direction only)
+router.get('/revenue/monthly-trends', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        createdAt: { gte: sixMonthsAgo },
+        status: { in: ['COMPLETED', 'ACTIVE'] }
+      },
+      select: {
+        createdAt: true,
+        totalPrice: true
+      }
+    });
+
+    const monthlyMap = new Map<string, { revenue: number; bookings: number }>();
+
+    bookings.forEach(booking => {
+      const monthKey = booking.createdAt.toISOString().substring(0, 7); // YYYY-MM
+      const existing = monthlyMap.get(monthKey) || { revenue: 0, bookings: 0 };
+      existing.revenue += booking.totalPrice;
+      existing.bookings += 1;
+      monthlyMap.set(monthKey, existing);
+    });
+
+    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const result = Array.from(monthlyMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([monthKey, data]) => {
+        const month = parseInt(monthKey.split('-')[1]);
+        return {
+          month: monthNames[month - 1],
+          revenue: Math.round(data.revenue),
+          bookings: data.bookings
+        };
+      });
+
+    res.json(result.length > 0 ? result : []);
+  } catch (error) {
+    console.error('Error fetching monthly trends:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des tendances mensuelles', details: (error as Error).message });
+  }
+});
+
 export default router;

@@ -10,8 +10,8 @@ import api from "../../services/api";
 interface StationStats {
   name: string;
   city: string;
-  bookingsCount: number;
-  revenue?: number;
+  totalBookings: number;
+  totalRevenue?: number;
 }
 
 interface UserStats {
@@ -158,8 +158,8 @@ export function DirectionReports() {
                       <p className="text-sm text-gray-600">{station.city}</p>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{station.bookingsCount} réservations</div>
-                      <div className="text-sm text-gray-600">{station.revenue?.toFixed(2) || 0} TND</div>
+                      <div className="font-semibold">{station.totalBookings || 0} réservations</div>
+                      <div className="text-sm text-gray-600">{station.totalRevenue?.toFixed(2) || 0} TND</div>
                     </div>
                   </div>
                 ))}

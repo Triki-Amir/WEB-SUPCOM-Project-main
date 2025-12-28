@@ -10,18 +10,52 @@ import api from "../../services/api";
 
 interface BookingTrend {
   date: string;
-  count: number;
+  bookings: number;
+  revenue: number;
 }
 
 interface VehiclePerformance {
-  vehicleName: string;
-  bookingsCount: number;
+  id: string;
+  name: string;
+  category: string;
+  station: string;
+  city: string;
+  totalBookings: number;
+  totalRevenue: number;
+  status: string;
+  mileage: number;
+}
+
+interface CategoryRevenue {
+  category: string;
   revenue: number;
+  percentage: number;
+}
+
+interface CityComparison {
+  city: string;
+  q1: number;
+  q2: number;
+}
+
+interface WeekdayBooking {
+  day: string;
+  bookings: number;
+}
+
+interface MonthlyTrend {
+  month: string;
+  revenue: number;
+  bookings: number;
 }
 
 export function DirectionAnalytics() {
   const [bookingTrends, setBookingTrends] = useState<BookingTrend[]>([]);
   const [vehiclePerformance, setVehiclePerformance] = useState<VehiclePerformance[]>([]);
+  const [categoryRevenue, setCategoryRevenue] = useState<CategoryRevenue[]>([]);
+  const [cityComparison, setCityComparison] = useState<CityComparison[]>([]);
+  const [weekdayBookings, setWeekdayBookings] = useState<WeekdayBooking[]>([]);
+  const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("30");
 
@@ -32,15 +66,49 @@ export function DirectionAnalytics() {
   const loadAnalyticsData = async () => {
     try {
       setLoading(true);
-      const [trendsData, performanceData] = await Promise.all([
-        api.analytics.getBookingTrends(parseInt(period)),
-        api.analytics.getVehiclePerformance()
+      const [
+        trendsData, 
+        performanceData, 
+        categoryData, 
+        cityData, 
+        weekdayData,
+        monthlyData
+      ] = await Promise.all([
+        api.analytics.getBookingTrends(parseInt(period)).catch(() => []),
+        api.analytics.getVehiclePerformance().catch(() => []),
+        api.analytics.getRevenueByCategory().catch(() => []),
+        api.analytics.getRevenueByCity().catch(() => []),
+        api.analytics.getBookingsByWeekday().catch(() => []),
+        api.analytics.getMonthlyTrends().catch(() => [])
       ]);
-      setBookingTrends(trendsData);
-      setVehiclePerformance(performanceData);
-    } catch (error) {
+      
+      console.log('📊 Analytics data loaded:', {
+        trends: trendsData,
+        performance: performanceData,
+        category: categoryData,
+        city: cityData,
+        weekday: weekdayData,
+        monthly: monthlyData
+      });
+      
+      setBookingTrends(Array.isArray(trendsData) ? trendsData as BookingTrend[] : []);
+      setVehiclePerformance(Array.isArray(performanceData) ? performanceData as VehiclePerformance[] : []);
+      setCategoryRevenue(Array.isArray(categoryData) ? categoryData as CategoryRevenue[] : []);
+      setCityComparison(Array.isArray(cityData) ? cityData as CityComparison[] : []);
+      setWeekdayBookings(Array.isArray(weekdayData) ? weekdayData as WeekdayBooking[] : []);
+      setMonthlyTrends(Array.isArray(monthlyData) ? monthlyData as MonthlyTrend[] : []);
+    } catch (error: any) {
       console.error("Error loading analytics:", error);
-      toast.error("Erreur lors du chargement des analyses");
+      const errorMessage = error?.message || "Erreur inconnue";
+      toast.error(`Impossible de charger certaines analyses. Vérifiez que vous avez des données dans la base.`);
+      
+      // Set empty arrays to prevent crashes
+      setBookingTrends([]);
+      setVehiclePerformance([]);
+      setCategoryRevenue([]);
+      setCityComparison([]);
+      setWeekdayBookings([]);
+      setMonthlyTrends([]);
     } finally {
       setLoading(false);
     }
@@ -50,35 +118,23 @@ export function DirectionAnalytics() {
     toast.success("Export des données en cours...");
   };
 
-  // Static data for demo purposes
-  const categoryRevenue = [
-    { category: "Compacte", revenue: 18500, percentage: 27.5 },
-    { category: "Berline", revenue: 22340, percentage: 33.2 },
-    { category: "SUV", revenue: 16200, percentage: 24.1 },
-    { category: "Électrique", revenue: 10300, percentage: 15.3 },
-  ];
+  // Format date for better display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  };
 
-  const cityComparison = [
-    { city: "Tunis", q1: 95000, q2: 105000 },
-    { city: "Sfax", q1: 48000, q2: 54000 },
-    { city: "Sousse", q1: 28000, q2: 30000 },
-    { city: "Monastir", q1: 12000, q2: 13000 },
-  ];
+  // Format booking trends with formatted dates
+  const formattedBookingTrends = bookingTrends.map(trend => ({
+    ...trend,
+    displayDate: formatDate(trend.date)
+  }));
 
+  // Customer segments - keeping static for now as it requires booking metadata
   const customerSegments = [
     { segment: "Particuliers", value: 65, color: "#3b82f6" },
     { segment: "Entreprises", value: 25, color: "#10b981" },
     { segment: "Touristes", value: 10, color: "#f59e0b" },
-  ];
-
-  const weekdayBookings = [
-    { day: "Lun", bookings: 58 },
-    { day: "Mar", bookings: 62 },
-    { day: "Mer", bookings: 71 },
-    { day: "Jeu", bookings: 65 },
-    { day: "Ven", bookings: 88 },
-    { day: "Sam", bookings: 95 },
-    { day: "Dim", bookings: 82 },
   ];
 
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
@@ -128,15 +184,15 @@ export function DirectionAnalytics() {
             <CardContent>
               {bookingTrends.length > 0 ? (
                 <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={bookingTrends}>
+                  <LineChart data={formattedBookingTrends}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="displayDate" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
                     <Line
                       type="monotone"
-                      dataKey="count"
+                      dataKey="bookings"
                       stroke="#3b82f6"
                       strokeWidth={2}
                       name="Réservations"
@@ -160,12 +216,12 @@ export function DirectionAnalytics() {
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart data={vehiclePerformance}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="vehicleName" />
+                    <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="bookingsCount" fill="#3b82f6" name="Réservations" />
-                    <Bar dataKey="revenue" fill="#10b981" name="Revenu (TND)" />
+                    <Bar dataKey="totalBookings" fill="#3b82f6" name="Réservations" />
+                    <Bar dataKey="totalRevenue" fill="#10b981" name="Revenu (TND)" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -183,7 +239,7 @@ export function DirectionAnalytics() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <AreaChart data={yearlyTrend}>
+                  <AreaChart data={monthlyTrends}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -214,12 +270,12 @@ export function DirectionAnalytics() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry) => `${entry.category}: ${entry.percentage}%`}
+                      label={(data) => `${data.category}: ${data.percentage}%`}
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="revenue"
                     >
-                      {categoryRevenue.map((entry, index) => (
+                      {categoryRevenue.map((_item, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -258,7 +314,7 @@ export function DirectionAnalytics() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={yearlyTrend}>
+                  <LineChart data={monthlyTrends}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -303,7 +359,7 @@ export function DirectionAnalytics() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <AreaChart data={yearlyTrend}>
+                  <AreaChart data={monthlyTrends}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -311,11 +367,11 @@ export function DirectionAnalytics() {
                     <Legend />
                     <Area
                       type="monotone"
-                      dataKey="customers"
+                      dataKey="bookings"
                       stroke="#f59e0b"
                       fill="#f59e0b"
                       fillOpacity={0.6}
-                      name="Clients actifs"
+                      name="Réservations"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
