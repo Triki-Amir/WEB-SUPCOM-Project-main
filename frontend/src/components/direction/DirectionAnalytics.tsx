@@ -100,7 +100,7 @@ export function DirectionAnalytics() {
     } catch (error: any) {
       console.error("Error loading analytics:", error);
       const errorMessage = error?.message || "Erreur inconnue";
-      toast.error(`Impossible de charger certaines analyses. Vérifiez que vous avez des données dans la base.`);
+      toast.error(`Impossible de charger certaines analyses: ${errorMessage}`);
       
       // Set empty arrays to prevent crashes
       setBookingTrends([]);

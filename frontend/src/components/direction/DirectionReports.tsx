@@ -104,7 +104,7 @@ export function DirectionReports() {
     },
   ];
 
-  const handleDownloadReport = (reportId: string, reportTitle: string) => {
+  const handleDownloadReport = (reportTitle: string) => {
     toast.success(`Téléchargement du rapport: ${reportTitle}`);
   };
 
@@ -289,7 +289,7 @@ export function DirectionReports() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDownloadReport(report.id, report.title)}
+                        onClick={() => handleDownloadReport(report.title)}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Télécharger
