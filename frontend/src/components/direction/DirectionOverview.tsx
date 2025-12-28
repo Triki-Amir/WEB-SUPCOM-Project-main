@@ -74,11 +74,11 @@ export function DirectionOverview() {
       };
       
       setStats(transformedStats);
-      setMonthlyData(monthlyTrends as MonthlyData[]);
-      setCityPerformance(stationStats as CityPerformance[]);
+      setMonthlyData(monthlyTrends);
+      setCityPerformance(stationStats);
       
       // Get top 3 vehicles
-      const topThree = (vehiclePerformance as any[])
+      const topThree = vehiclePerformance
         .sort((a, b) => b.totalRevenue - a.totalRevenue)
         .slice(0, 3)
         .map(v => ({

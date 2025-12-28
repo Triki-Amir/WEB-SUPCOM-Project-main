@@ -30,10 +30,16 @@ interface DashboardResponse {
 }
 
 interface StationStatisticsResponse {
+  id: string;
   name: string;
   city: string;
+  totalVehicles: number;
+  availablePlaces: number;
+  capacity: number;
+  occupancyRate: string;
   totalBookings: number;
-  totalRevenue?: number;
+  totalRevenue: number;
+  isOpen: boolean;
 }
 
 interface UserStatisticsResponse {
