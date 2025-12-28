@@ -5,6 +5,55 @@
  * Handles authentication, error handling, and request/response formatting.
  */
 
+// Analytics API Response Types
+interface DashboardResponse {
+  vehicles?: {
+    total: number;
+    available: number;
+    rented: number;
+    maintenance: number;
+    utilizationRate: string;
+  };
+  bookings?: {
+    total: number;
+    active: number;
+  };
+  revenue?: {
+    total: number;
+  };
+  users?: {
+    total: number;
+  };
+  incidents?: {
+    open: number;
+  };
+}
+
+interface StationStatisticsResponse {
+  name: string;
+  city: string;
+  totalBookings: number;
+  totalRevenue?: number;
+}
+
+interface UserStatisticsResponse {
+  totalUsers: number;
+  activeClients: number;
+  newThisMonth: number;
+}
+
+interface MonthlyTrendResponse {
+  month: string;
+  revenue: number;
+  bookings: number;
+}
+
+interface VehiclePerformanceResponse {
+  name: string;
+  totalBookings: number;
+  totalRevenue: number;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
@@ -533,7 +582,7 @@ export const analyticsService = {
    * Get dashboard statistics (admin and direction only)
    */
   getDashboard: async () => {
-    return apiRequest('/analytics/dashboard');
+    return apiRequest<DashboardResponse>('/analytics/dashboard');
   },
 
   /**
@@ -547,21 +596,21 @@ export const analyticsService = {
    * Get vehicle performance (admin and direction only)
    */
   getVehiclePerformance: async () => {
-    return apiRequest('/analytics/vehicles/performance');
+    return apiRequest<VehiclePerformanceResponse[]>('/analytics/vehicles/performance');
   },
 
   /**
    * Get station statistics (admin and direction only)
    */
   getStationStatistics: async () => {
-    return apiRequest('/analytics/stations/statistics');
+    return apiRequest<StationStatisticsResponse[]>('/analytics/stations/statistics');
   },
 
   /**
    * Get user statistics (admin and direction only)
    */
   getUserStatistics: async () => {
-    return apiRequest('/analytics/users/statistics');
+    return apiRequest<UserStatisticsResponse>('/analytics/users/statistics');
   },
 
   /**
@@ -589,7 +638,7 @@ export const analyticsService = {
    * Get monthly revenue trends (admin and direction only)
    */
   getMonthlyTrends: async () => {
-    return apiRequest('/analytics/revenue/monthly-trends');
+    return apiRequest<MonthlyTrendResponse[]>('/analytics/revenue/monthly-trends');
   },
 };
 
