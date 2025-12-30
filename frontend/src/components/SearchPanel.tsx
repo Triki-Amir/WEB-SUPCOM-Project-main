@@ -4,11 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { CalendarIcon, MapPin } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { MapPin } from "lucide-react";
 
 interface SearchPanelProps {
   onSearch: (filters: SearchFilters) => void;
@@ -23,18 +19,16 @@ export interface SearchFilters {
 
 export function SearchPanel({ onSearch }: SearchPanelProps) {
   const [location, setLocation] = useState("Tunis");
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
-  const [endDate, setEndDate] = useState<Date | undefined>(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
   const [category, setCategory] = useState("all");
 
   const handleSearch = () => {
-    onSearch({ location, startDate, endDate, category });
+    onSearch({ location, startDate: undefined, endDate: undefined, category });
   };
 
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
           <div className="space-y-2">
             <Label htmlFor="location">Lieu de prise en charge</Label>
             <div className="relative">
@@ -47,46 +41,6 @@ export function SearchPanel({ onSearch }: SearchPanelProps) {
                 placeholder="Ville ou aéroport"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Date de départ</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "P", { locale: fr }) : "Sélectionner"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Date de retour</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "P", { locale: fr }) : "Sélectionner"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="space-y-2">

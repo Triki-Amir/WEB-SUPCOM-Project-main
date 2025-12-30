@@ -1,13 +1,39 @@
 # ⚡ Quick Start Guide - Auto Fleet
 
-Get up and running with Auto Fleet in 5 minutes!
+<div align="center">
+
+![Auto Fleet](../frontend/src/assets/logo.png)
+
+**Get up and running with Auto Fleet in 5 minutes!**
+
+</div>
+
+---
 
 ## 🎯 What You Need
 
-✅ Node.js 18+ installed  
-✅ PostgreSQL 14+ installed  
-✅ npm or yarn  
-✅ 10 minutes of your time
+<table>
+<tr>
+<td align="center">✅</td>
+<td><strong>Node.js 18+</strong></td>
+<td>JavaScript runtime</td>
+</tr>
+<tr>
+<td align="center">✅</td>
+<td><strong>PostgreSQL 14+</strong></td>
+<td>Database server</td>
+</tr>
+<tr>
+<td align="center">✅</td>
+<td><strong>npm or yarn</strong></td>
+<td>Package manager</td>
+</tr>
+<tr>
+<td align="center">✅</td>
+<td><strong>5-10 minutes</strong></td>
+<td>Your time</td>
+</tr>
+</table>
 
 ## 🚀 Installation (3 Steps)
 
@@ -69,11 +95,38 @@ npm run dev
 
 Login with these credentials:
 
-| Role | Email | Password |
-|------|-------|----------|
-| **Client** | client@autofleet.tn | password123 |
-| **Admin** | admin@autofleet.tn | password123 |
-| **Direction** | direction@autofleet.tn | password123 |
+### Login Page Preview
+
+![Login Interface](../frontend/src/assets/login_screanshot.png)
+
+<table>
+<tr>
+<th>Role</th>
+<th>Email</th>
+<th>Password</th>
+<th>Dashboard</th>
+</tr>
+<tr>
+<td>👤 <strong>Client</strong></td>
+<td><code>client@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Search & book vehicles, manage rentals</td>
+</tr>
+<tr>
+<td>👨‍💼 <strong>Admin</strong></td>
+<td><code>admin@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Full system management</td>
+</tr>
+<tr>
+<td>👔 <strong>Direction</strong></td>
+<td><code>direction@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Analytics & reports</td>
+</tr>
+</table>
+
+> ⚠️ **Security Note:** Change these passwords in production!
 
 ## 🗂️ Project Structure (Simple View)
 
@@ -94,23 +147,30 @@ Your Project/
 
 After logging in, you'll see different dashboards based on your role:
 
+### 🏠 Home Page
+![Home Page](../frontend/src/assets/home_page_screanshot.png)
+
 ### 👤 Client Dashboard
-- Search and book vehicles
-- View your rentals
-- Report incidents
-- Manage profile
+![Client Interface](../frontend/src/assets/user_interface_screanshot.png)
+
+- 🔍 Search and book vehicles
+- 📋 View your rentals
+- 🚨 Report incidents
+- 👤 Manage profile
 
 ### 👨‍💼 Admin Dashboard
-- Manage vehicle fleet
-- Handle bookings
-- Track maintenance
-- Manage users
+![Admin Fleet Management](../frontend/src/assets/parc_admin_screanshot.png)
+
+- 🚗 Manage vehicle fleet
+- 📝 Handle bookings
+- 🔧 Track maintenance
+- 👥 Manage users
 
 ### 👔 Direction Dashboard
-- View analytics
-- Generate reports
-- Track KPIs
-- Monitor performance
+- 📊 View analytics
+- 📈 Generate reports
+- 🎯 Track KPIs
+- 📉 Monitor performance
 
 ## 📚 Next Steps
 
