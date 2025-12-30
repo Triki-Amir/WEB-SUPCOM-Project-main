@@ -288,9 +288,6 @@ router.get('/revenue/by-category', authenticate, async (req: AuthRequest, res) =
 
     const vehicles = await prisma.vehicle.groupBy({
       by: ['category'],
-      _sum: {
-        pricePerDay: true
-      },
       _count: {
         id: true
       }
@@ -312,7 +309,7 @@ router.get('/revenue/by-category', authenticate, async (req: AuthRequest, res) =
       return {
         category: cat.category,
         revenue,
-        count: cat._count.id
+        count: cat._count?.id || 0
       };
     });
 
@@ -493,6 +490,305 @@ router.get('/revenue/monthly-trends', authenticate, async (req: AuthRequest, res
   } catch (error) {
     console.error('Error fetching monthly trends:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des tendances mensuelles', details: (error as Error).message });
+  }
+});
+
+// Get monthly changes comparison (admin and direction only)
+router.get('/monthly-changes', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    // Get stats for current month
+    const [
+      currentVehicles,
+      lastVehicles,
+      currentUsers,
+      lastUsers,
+      currentBookings,
+      lastBookings,
+      currentActiveBookings,
+      lastActiveBookings,
+      currentRevenue,
+      lastRevenue,
+      currentIncidents,
+      lastIncidents
+    ] = await Promise.all([
+      // Vehicles - count all vehicles that exist now
+      prisma.vehicle.count(),
+      // Vehicles - count vehicles that existed at end of last month (approximation)
+      prisma.vehicle.count({
+        where: {
+          createdAt: { lte: lastMonthEnd }
+        }
+      }),
+      // Users - current
+      prisma.user.count({ where: { role: 'CLIENT' } }),
+      // Users - as of last month end
+      prisma.user.count({
+        where: {
+          role: 'CLIENT',
+          createdAt: { lte: lastMonthEnd }
+        }
+      }),
+      // Bookings this month
+      prisma.booking.count({
+        where: {
+          createdAt: { gte: currentMonthStart }
+        }
+      }),
+      // Bookings last month
+      prisma.booking.count({
+        where: {
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd
+          }
+        }
+      }),
+      // Active bookings now
+      prisma.booking.count({ where: { status: 'ACTIVE' } }),
+      // This is an approximation - we'll compare total bookings rate
+      prisma.booking.count({
+        where: {
+          status: { in: ['ACTIVE', 'COMPLETED'] },
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd
+          }
+        }
+      }),
+      // Revenue this month
+      prisma.booking.aggregate({
+        where: {
+          status: { in: ['COMPLETED', 'ACTIVE'] },
+          createdAt: { gte: currentMonthStart }
+        },
+        _sum: { totalPrice: true }
+      }),
+      // Revenue last month
+      prisma.booking.aggregate({
+        where: {
+          status: { in: ['COMPLETED', 'ACTIVE'] },
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd
+          }
+        },
+        _sum: { totalPrice: true }
+      }),
+      // Incidents this month
+      prisma.incident.count({
+        where: {
+          createdAt: { gte: currentMonthStart }
+        }
+      }),
+      // Incidents last month
+      prisma.incident.count({
+        where: {
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd
+          }
+        }
+      })
+    ]);
+
+    // Calculate changes
+    const vehicleChange = currentVehicles - lastVehicles;
+    const userChange = currentUsers - lastUsers;
+    const bookingChange = currentBookings - lastBookings;
+    
+    const currentRevenueValue = currentRevenue._sum.totalPrice || 0;
+    const lastRevenueValue = lastRevenue._sum.totalPrice || 0;
+    const revenueChangePercent = lastRevenueValue > 0 
+      ? ((currentRevenueValue - lastRevenueValue) / lastRevenueValue * 100).toFixed(1)
+      : '0.0';
+    
+    // Active bookings rate change (approximate)
+    const activeBookingsChangePercent = lastActiveBookings > 0
+      ? ((currentActiveBookings - lastActiveBookings) / lastActiveBookings * 100).toFixed(1)
+      : '0.0';
+    
+    const incidentChange = currentIncidents - lastIncidents;
+
+    res.json({
+      vehicles: {
+        change: vehicleChange,
+        changeText: vehicleChange > 0 ? `+${vehicleChange} ce mois` : vehicleChange < 0 ? `${vehicleChange} ce mois` : 'Aucun changement',
+        trend: vehicleChange >= 0 ? 'up' : 'down'
+      },
+      users: {
+        change: userChange,
+        changeText: userChange > 0 ? `+${userChange} ce mois` : userChange < 0 ? `${userChange} ce mois` : 'Aucun changement',
+        trend: userChange >= 0 ? 'up' : 'down'
+      },
+      revenue: {
+        changePercent: parseFloat(revenueChangePercent),
+        changeText: parseFloat(revenueChangePercent) > 0 ? `+${revenueChangePercent}%` : `${revenueChangePercent}%`,
+        trend: parseFloat(revenueChangePercent) >= 0 ? 'up' : 'down'
+      },
+      activeBookings: {
+        changePercent: parseFloat(activeBookingsChangePercent),
+        changeText: parseFloat(activeBookingsChangePercent) > 0 ? `+${activeBookingsChangePercent}%` : `${activeBookingsChangePercent}%`,
+        trend: parseFloat(activeBookingsChangePercent) >= 0 ? 'up' : 'down'
+      },
+      totalBookings: {
+        change: bookingChange,
+        changeText: bookingChange > 0 ? `+${bookingChange} ce mois` : bookingChange < 0 ? `${bookingChange} ce mois` : 'Aucun changement',
+        trend: bookingChange >= 0 ? 'up' : 'down'
+      },
+      incidents: {
+        change: incidentChange,
+        changeText: incidentChange > 0 ? `+${incidentChange} vs mois dernier` : incidentChange < 0 ? `${incidentChange} vs mois dernier` : 'Aucun changement',
+        trend: incidentChange <= 0 ? 'down' : 'up' // Less incidents is better (down is good)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching monthly changes:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des changements mensuels', details: (error as Error).message });
+  }
+});
+
+// Get alerts and notifications (admin and direction only)
+router.get('/alerts', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const alerts = [];
+
+    // Check for vehicles needing maintenance
+    const maintenanceNeeded = await prisma.vehicle.count({
+      where: { status: 'MAINTENANCE' }
+    });
+    if (maintenanceNeeded > 0) {
+      alerts.push({
+        type: 'warning',
+        message: `${maintenanceNeeded} véhicule${maintenanceNeeded > 1 ? 's nécessitent' : ' nécessite'} une maintenance`
+      });
+    }
+
+    // Check for upcoming maintenance
+    const upcomingMaintenance = await prisma.maintenance.count({
+      where: {
+        scheduledAt: {
+          gte: new Date(),
+          lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Next 7 days
+        },
+        completedAt: null
+      }
+    });
+    if (upcomingMaintenance > 0) {
+      alerts.push({
+        type: 'info',
+        message: `${upcomingMaintenance} maintenance${upcomingMaintenance > 1 ? 's' : ''} programmée${upcomingMaintenance > 1 ? 's' : ''} cette semaine`
+      });
+    }
+
+    // Check for open incidents
+    const openIncidents = await prisma.incident.count({
+      where: { status: { in: ['PENDING', 'IN_PROGRESS'] } }
+    });
+    if (openIncidents > 0) {
+      alerts.push({
+        type: 'warning',
+        message: `${openIncidents} incident${openIncidents > 1 ? 's' : ''} en attente de résolution`
+      });
+    }
+
+    // Check monthly goal achievement
+    const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const [currentRevenue, currentBookings] = await Promise.all([
+      prisma.booking.aggregate({
+        where: {
+          createdAt: { gte: currentMonthStart },
+          status: { in: ['COMPLETED', 'ACTIVE'] }
+        },
+        _sum: { totalPrice: true }
+      }),
+      prisma.booking.count({
+        where: { createdAt: { gte: currentMonthStart } }
+      })
+    ]);
+
+    const monthlyRevenueGoal = 60000; // Goal: 60,000 TND/month
+    const revenueAchievement = ((currentRevenue._sum.totalPrice || 0) / monthlyRevenueGoal * 100).toFixed(0);
+    
+    if (parseFloat(revenueAchievement) >= 100) {
+      alerts.push({
+        type: 'success',
+        message: `Objectif mensuel de revenu atteint à ${revenueAchievement}%`
+      });
+    }
+
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error fetching alerts:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des alertes' });
+  }
+});
+
+// Get monthly goals (admin and direction only)
+router.get('/goals', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'DIRECTION') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+
+    const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    
+    const [revenue, bookings, newUsers] = await Promise.all([
+      prisma.booking.aggregate({
+        where: {
+          createdAt: { gte: currentMonthStart },
+          status: { in: ['COMPLETED', 'ACTIVE'] }
+        },
+        _sum: { totalPrice: true }
+      }),
+      prisma.booking.count({
+        where: { createdAt: { gte: currentMonthStart } }
+      }),
+      prisma.user.count({
+        where: {
+          role: 'CLIENT',
+          createdAt: { gte: currentMonthStart }
+        }
+      })
+    ]);
+
+    const goals = [
+      {
+        label: 'Revenu',
+        current: Math.round(revenue._sum.totalPrice || 0),
+        target: 60000,
+        unit: 'TND'
+      },
+      {
+        label: 'Réservations',
+        current: bookings,
+        target: 80,
+        unit: ''
+      },
+      {
+        label: 'Nouveaux clients',
+        current: newUsers,
+        target: 15,
+        unit: ''
+      }
+    ];
+
+    res.json(goals);
+  } catch (error) {
+    console.error('Error fetching goals:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des objectifs' });
   }
 });
 

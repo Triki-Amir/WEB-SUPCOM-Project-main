@@ -60,6 +60,51 @@ interface VehiclePerformanceResponse {
   totalRevenue: number;
 }
 
+interface MonthlyChangesResponse {
+  vehicles: {
+    change: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+  users: {
+    change: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+  revenue: {
+    changePercent: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+  activeBookings: {
+    changePercent: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+  totalBookings: {
+    change: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+  incidents: {
+    change: number;
+    changeText: string;
+    trend: 'up' | 'down';
+  };
+}
+
+interface AlertResponse {
+  type: 'warning' | 'info' | 'success';
+  message: string;
+}
+
+interface GoalResponse {
+  label: string;
+  current: number;
+  target: number;
+  unit: string;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
@@ -645,6 +690,27 @@ export const analyticsService = {
    */
   getMonthlyTrends: async () => {
     return apiRequest<MonthlyTrendResponse[]>('/analytics/revenue/monthly-trends');
+  },
+
+  /**
+   * Get monthly changes comparison (admin and direction only)
+   */
+  getMonthlyChanges: async () => {
+    return apiRequest<MonthlyChangesResponse>('/analytics/monthly-changes');
+  },
+
+  /**
+   * Get alerts and notifications (admin and direction only)
+   */
+  getAlerts: async () => {
+    return apiRequest<AlertResponse[]>('/analytics/alerts');
+  },
+
+  /**
+   * Get monthly goals (admin and direction only)
+   */
+  getGoals: async () => {
+    return apiRequest<GoalResponse[]>('/analytics/goals');
   },
 };
 

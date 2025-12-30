@@ -38,11 +38,35 @@ interface TopVehicle {
   totalRevenue: number;
 }
 
+interface MonthlyChanges {
+  vehicles: { change: number; changeText: string; trend: 'up' | 'down' };
+  users: { change: number; changeText: string; trend: 'up' | 'down' };
+  revenue: { changePercent: number; changeText: string; trend: 'up' | 'down' };
+  activeBookings: { changePercent: number; changeText: string; trend: 'up' | 'down' };
+  totalBookings: { change: number; changeText: string; trend: 'up' | 'down' };
+  incidents: { change: number; changeText: string; trend: 'up' | 'down' };
+}
+
+interface Alert {
+  type: 'warning' | 'info' | 'success';
+  message: string;
+}
+
+interface Goal {
+  label: string;
+  current: number;
+  target: number;
+  unit: string;
+}
+
 export function DirectionOverview() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [cityPerformance, setCityPerformance] = useState<CityPerformance[]>([]);
   const [topVehicles, setTopVehicles] = useState<TopVehicle[]>([]);
+  const [monthlyChanges, setMonthlyChanges] = useState<MonthlyChanges | null>(null);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,6 +100,27 @@ export function DirectionOverview() {
       setStats(transformedStats);
       setMonthlyData(monthlyTrends);
       setCityPerformance(stationStats);
+      
+      // Try to load monthly changes (optional - may fail if backend not restarted)
+      try {
+        const changes = await api.analytics.getMonthlyChanges();
+        setMonthlyChanges(changes);
+      } catch (error) {
+        console.warn("Monthly changes not available yet - backend needs restart:", error);
+        // Leave monthlyChanges as null, fallback values will be used
+      }
+
+      // Load alerts and goals
+      try {
+        const [alertsData, goalsData] = await Promise.all([
+          api.analytics.getAlerts(),
+          api.analytics.getGoals()
+        ]);
+        setAlerts(alertsData);
+        setGoals(goalsData);
+      } catch (error) {
+        console.warn("Alerts/Goals not available:", error);
+      }
       
       // Get top 3 vehicles
       const topThree = vehiclePerformance
@@ -117,48 +162,48 @@ export function DirectionOverview() {
     {
       title: "Flotte totale",
       value: `${stats.totalVehicles} véhicules`,
-      change: "+8 ce mois",
-      trend: "up",
+      change: monthlyChanges?.vehicles.changeText || "+0 ce mois",
+      trend: monthlyChanges?.vehicles.trend || "up",
       icon: Car,
       color: "text-blue-600",
     },
     {
       title: "Clients actifs",
       value: stats.totalUsers.toString(),
-      change: "+124 ce mois",
-      trend: "up",
+      change: monthlyChanges?.users.changeText || "+0 ce mois",
+      trend: monthlyChanges?.users.trend || "up",
       icon: Users,
       color: "text-green-600",
     },
     {
       title: "Revenu total",
       value: `${stats.totalRevenue.toFixed(2)} TND`,
-      change: "+12.5%",
-      trend: "up",
+      change: monthlyChanges?.revenue.changeText || "+0%",
+      trend: monthlyChanges?.revenue.trend || "up",
       icon: DollarSign,
       color: "text-purple-600",
     },
     {
       title: "Réservations actives",
       value: stats.activeBookings.toString(),
-      change: "+3.2%",
-      trend: "up",
+      change: monthlyChanges?.activeBookings.changeText || "+0%",
+      trend: monthlyChanges?.activeBookings.trend || "up",
       icon: TrendingUp,
       color: "text-orange-600",
     },
     {
       title: "Total réservations",
       value: stats.totalBookings.toString(),
-      change: "+2 ce mois",
-      trend: "up",
+      change: monthlyChanges?.totalBookings.changeText || "+0 ce mois",
+      trend: monthlyChanges?.totalBookings.trend || "up",
       icon: MapPin,
       color: "text-indigo-600",
     },
     {
       title: "Incidents",
       value: stats.totalIncidents.toString(),
-      change: "-4 vs mois dernier",
-      trend: "down",
+      change: monthlyChanges?.incidents.changeText || "0 vs mois dernier",
+      trend: monthlyChanges?.incidents.trend || "down",
       icon: AlertCircle,
       color: "text-red-600",
     },
@@ -351,21 +396,21 @@ export function DirectionOverview() {
             <CardTitle>Alertes importantes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { type: "warning", message: "3 véhicules nécessitent une maintenance" },
-                { type: "info", message: "Nouveau contrat d'assurance à renouveler" },
-                { type: "success", message: "Objectif mensuel atteint à 112%" },
-              ].map((alert, index) => (
-                <div key={index} className={`p-3 rounded-lg ${
-                  alert.type === "warning" ? "bg-yellow-50 border-l-4 border-yellow-500" :
-                  alert.type === "info" ? "bg-blue-50 border-l-4 border-blue-500" :
-                  "bg-green-50 border-l-4 border-green-500"
-                }`}>
-                  <p className="text-sm">{alert.message}</p>
-                </div>
-              ))}
-            </div>
+            {alerts.length > 0 ? (
+              <div className="space-y-3">
+                {alerts.map((alert, index) => (
+                  <div key={index} className={`p-3 rounded-lg ${
+                    alert.type === "warning" ? "bg-yellow-50 border-l-4 border-yellow-500" :
+                    alert.type === "info" ? "bg-blue-50 border-l-4 border-blue-500" :
+                    "bg-green-50 border-l-4 border-green-500"
+                  }`}>
+                    <p className="text-sm">{alert.message}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Aucune alerte</p>
+            )}
           </CardContent>
         </Card>
 
@@ -374,28 +419,38 @@ export function DirectionOverview() {
             <CardTitle>Objectifs mensuels</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                { label: "Revenu", current: 67340, target: 60000, unit: "TND" },
-                { label: "Réservations", current: 450, target: 500, unit: "" },
-                { label: "Nouveaux clients", current: 124, target: 150, unit: "" },
-              ].map((goal, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm">{goal.label}</span>
-                    <span className="text-sm">
-                      {goal.current}/{goal.target} {goal.unit}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full bg-blue-500"
-                      style={{ width: `${Math.min((goal.current / goal.target) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            {goals.length > 0 ? (
+              <div className="space-y-4">
+                {goals.map((goal, index) => {
+                  const percentage = Math.min((goal.current / goal.target) * 100, 100);
+                  return (
+                    <div key={index}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm">{goal.label}</span>
+                        <span className="text-sm">
+                          {goal.current}/{goal.target} {goal.unit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            percentage >= 100 ? 'bg-green-500' :
+                            percentage >= 75 ? 'bg-blue-500' :
+                            percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {percentage.toFixed(0)}% atteint
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Chargement...</p>
+            )}
           </CardContent>
         </Card>
       </div>
