@@ -1,44 +1,14 @@
 # 🔗 Architecture & Integration Guide
 
 <div align="center">
-
-![Auto Fleet](../frontend/src/assets/logo.png)
-
-**Complete Integration & Data Flow Documentation**
-
+<img src="../frontend/src/assets/logo.png" alt="Auto Fleet" width="80" />
 </div>
 
 ---
 
-## 🏗️ Project Architecture Overview
+Complete frontend-backend integration documentation with data flow details.
 
-This document provides a comprehensive understanding of how the **Frontend** and **Backend** are integrated in the Auto Fleet Car Rental Application, including detailed interactions between components, services, and data flow.
-
-### 🎯 Integration Highlights
-
-✅ **RESTful API** - Clean HTTP/JSON communication  
-✅ **JWT Authentication** - Secure token-based auth  
-✅ **Role-Based Access** - Different permissions per user type  
-✅ **Real-Time Updates** - Instant data synchronization  
-
-### 📸 Application Views
-
-<table>
-<tr>
-<td>
-
-**Login Interface**
-![Login](../frontend/src/assets/login_screanshot.png)
-
-</td>
-<td>
-
-**Fleet Management**
-![Fleet](../frontend/src/assets/parc_admin_screanshot.png)
-
-</td>
-</tr>
-</table>
+**Integration:** RESTful API • JWT Auth • Role-Based Access • Real-Time Updates
 
 ---
 

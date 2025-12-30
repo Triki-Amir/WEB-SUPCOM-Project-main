@@ -1,30 +1,12 @@
 # 📂 Project Structure Guide
 
 <div align="center">
-
-![Auto Fleet](../frontend/src/assets/logo.png)
-
-**Complete Guide to Auto Fleet Project Organization**
-
+<img src="../frontend/src/assets/logo.png" alt="Auto Fleet" width="80" />
 </div>
 
 ---
 
-This document provides a visual and detailed overview of the Auto Fleet project structure.
-
-## 🎯 Quick Overview
-
-Auto Fleet is organized into clear, logical sections:
-
-- **Backend** - API server and database management
-- **Frontend** - React application with role-based dashboards
-- **Documentation** - Comprehensive guides and references
-- **Configuration** - Setup and deployment guides
-
-### 📸 Visual Guide
-
-![User Interface](../frontend/src/assets/user_interface_screanshot.png)
-*Client Dashboard - Intuitive interface for vehicle booking and management*
+**Organization:** Backend (API + Database) • Frontend (React Dashboards) • Documentation • Configuration
 
 ## 🌳 Complete Directory Tree
 
@@ -240,274 +222,62 @@ npm run prisma:studio # Visual database editor
 
 ### 🎨 Frontend (`/frontend/src`)
 
-The frontend is a modern React application built with Vite and TypeScript.
+Modern React application with role-based interfaces.
 
-**Purpose:** Provide intuitive user interfaces for clients, admins, and management.
+**Stack:** React 18.3.1 • TypeScript • Vite • Tailwind CSS • Radix UI • Recharts • React Hook Form
 
-**Technology Stack:**
-- **React 18.3.1** - Component-based UI with hooks
-- **TypeScript** - Type-safe component development
-- **Vite** - Lightning-fast dev server and builds
-- **Tailwind CSS** - Utility-first styling framework
-- **Radix UI** - 30+ accessible component primitives
-- **Recharts 2.15.2** - Beautiful data visualizations
-- **React Hook Form 7.55.0** - Performant form management
-- **Lucide React 0.487.0** - 500+ modern icons
-- **Sonner 2.0.3** - Toast notifications
+**Features:**
+- 70+ Components organized by role (Client, Admin, Direction)
+- Centralized API service (678 lines)
+- Global authentication state
+- Real-time toast notifications
 
-**Key Features:**
-- ✅ **Role-Based Dashboards** - CLIENT, ADMIN, DIRECTION interfaces
-- ✅ **70+ Components** - Well-organized component library
-- ✅ **Centralized API** - Single api.ts service layer (678 lines)
-- ✅ **Global State** - AuthContext for authentication state
-- ✅ **Type Safety** - Full TypeScript coverage
-- ✅ **Responsive Design** - Mobile-first approach
-- ✅ **Real-Time Updates** - Toast notifications for all actions
-- ✅ **Advanced Forms** - React Hook Form with validation
+**Access:** `http://localhost:3000` or `http://localhost:5173`
 
-**Component Organization:**
-- **Client Portal (7 components):**
-  - Vehicle search with filters (date, category, city, station)
-  - Booking management (view, create, cancel)
-  - Rental history with detailed views
-  - Incident reporting with severity levels
-  - Real-time notifications
-  - Profile management with password change
-  
-- **Admin Dashboard (8 components):**
-  - Comprehensive statistics overview
-  - Complete vehicle fleet CRUD operations
-  - Booking lifecycle management (confirm, start, complete)
-  - Maintenance scheduling and tracking
-  - Station management with capacity tracking
-  - User administration (role changes, account management)
-  - Incident resolution workflow
-  
-- **Director Dashboard (4 components):**
-  - High-level business overview
-  - Advanced analytics with Recharts visualizations
-  - Revenue and performance metrics
-  - Custom report generation
+**Components:** Client portal (7) • Admin dashboard (8) • Director dashboard (4) • UI library (50+)  
+See [ARCHITECTURE_INTEGRATION.md](./ARCHITECTURE_INTEGRATION.md) for complete component details.
 
-**UI Component Library (50+):**
-- Form components (Input, Select, Checkbox, Radio, etc.)
-- Layout components (Card, Dialog, Tabs, Accordion)
-- Data display (Table, Badge, Avatar, Calendar)
-- Feedback components (Toast, Alert, Progress)
-- Navigation (Dropdown, Menu, Breadcrumb)
-
-**Start Frontend:**
+**Commands:**
 ```bash
-npm run dev          # Development server with HMR
-npm run build        # Production build (optimized)
-npm run preview      # Preview production build
+npm run dev          # Development server
+npm run build        # Production build
 ```
-
-**Access:** `http://localhost:3000` (or `http://localhost:5173` - Vite default)
 
 ### 📚 Documentation (`/Documentation`)
 
-Centralized location for all project documentation.
-
-**Purpose:** Easy access to guides, architecture, and references.
-
-**Key Files:**
-- `INDEX.md` - Documentation navigation
-- `ARCHITECTURE.md` - System architecture
-- `README.md` - Documentation overview
-- `PROJECT_STRUCTURE.md` - This file
+Technical guides and architecture references.
 
 ### ⚙️ Configuration (`/Configuration`)
 
-Guide to configuration files (actual files at root).
+Setup and configuration guides.
 
-**Purpose:** Reference for setting up and configuring the project.
-
-**Key File:**
-- `README.md` - Configuration guide
-
-## 📋 File Organization
-
-### Backend Files
+## 📋 Quick Reference
 
 | Path | Description |
 |------|-------------|
 | `backend/src/routes/` | API endpoint handlers |
-| `backend/src/middleware/` | Auth, validation, error handling |
-| `backend/prisma/schema.prisma` | Database schema definition |
-| `backend/.env` | Environment variables (not in git) |
-
-### Frontend Files
-
-| Path | Description |
-|------|-------------|
-| `src/components/` | All React components |
-| `src/contexts/` | Global state management |
+| `backend/prisma/schema.prisma` | Database schema |
+| `src/components/` | React components |
 | `src/services/api.ts` | Centralized API calls |
-| `src/assets/` | Images, icons, static files |
-
-### Root Files
-
-| File | Description |
-|------|-------------|
-| `package.json` | Frontend dependencies & scripts |
-| `vite.config.ts` | Vite build configuration |
-| `index.html` | HTML entry point |
-| `tsconfig.json` | TypeScript configuration |
+| `src/contexts/` | Global state management |
 
 ## 🔀 Data Flow
 
-```
-┌─────────────┐      HTTP/REST      ┌─────────────┐      SQL      ┌──────────────┐
-│   Browser   │ ◄─────────────────► │   Backend   │ ◄───────────► │  PostgreSQL  │
-│  (React)    │    JSON/JWT         │  (Express)  │    Prisma     │   Database   │
-└─────────────┘                     └─────────────┘               └──────────────┘
-      ▲                                    ▲
-      │                                    │
-      │  /src/services/api.ts             │  /backend/src/routes/
-      │  Makes HTTP requests              │  Handles API endpoints
-      │                                    │
-      └──── Authentication (JWT) ─────────┘
-```
+**Browser** ↔ HTTP/REST (JSON + JWT) ↔ **Backend** ↔ Prisma ↔ **PostgreSQL**
 
-## 🚀 Quick Navigation
-
-### For Development
+## 🚀 Development Tasks
 
 | Task | Location |
 |------|----------|
-| Add new API endpoint | `backend/src/routes/` |
-| Create new component | `src/components/` |
-| Add global state | `src/contexts/` |
-| Make API call | `src/services/api.ts` |
+| Add API endpoint | `backend/src/routes/` |
+| Create component | `src/components/` |
 | Update DB schema | `backend/prisma/schema.prisma` |
-| Add styling | `src/styles/` or component |
 
-### For Documentation
+---
 
-| Task | Location |
-|------|----------|
-| Read architecture | `Documentation/ARCHITECTURE.md` |
-| Setup guide | `Documentation/README_DEVELOPMENT.md` |
-| API reference | `backend/README.md` |
-| Component docs | `src/README.md` |
-| Config help | `Configuration/README.md` |
+**Next:** See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 
-### For Configuration
-
-| Task | Location |
-|------|----------|
-| Change frontend port | `vite.config.ts` |
-| Change backend port | `backend/.env` |
-| Add dependency | `package.json` or `backend/package.json` |
-| Configure database | `backend/.env` |
-| TypeScript settings | `tsconfig.json` |
-
-## 📊 Component Hierarchy
-
-```
-App.tsx (Root)
-│
-├── AuthProvider (Context)
-│   │
-│   ├── HomePage (Public)
-│   │   ├── SearchPanel
-│   │   ├── VehicleCard
-│   │   └── StationRecommendation
-│   │
-│   ├── LoginPage (Public)
-│   │   └── LoginForm
-│   │
-│   └── Dashboard (Protected)
-│       │
-│       ├── ClientDashboard
-│       │   ├── VehicleSearch
-│       │   ├── MyBookings
-│       │   ├── ActiveRental
-│       │   └── IncidentReporting
-│       │
-│       ├── AdminDashboard
-│       │   ├── FleetManagement
-│       │   ├── BookingManagement
-│       │   ├── UserManagement
-│       │   └── MaintenanceTracking
-│       │
-│       └── DirectionDashboard
-│           ├── Analytics
-│           ├── Reports
-│           └── KPIs
-```
-
-## 🎨 Styling Structure
-
-```
-Styling Approach: Utility-First (Tailwind CSS)
-
-├── Global Styles
-│   ├── src/index.css          # Base styles
-│   └── src/styles/globals.css # Custom utilities
-│
-├── Component Styles
-│   └── Inline Tailwind classes in .tsx files
-│
-└── UI Components
-    └── src/components/ui/      # Styled primitives
-        ├── button.tsx
-        ├── card.tsx
-        ├── dialog.tsx
-        └── ...
-```
-
-## 🔐 Authentication Flow
-
-```
-1. User → LoginPage
-          ↓
-2. API call → /api/auth/login
-          ↓
-3. Backend validates credentials
-          ↓
-4. JWT token generated
-          ↓
-5. Token stored in AuthContext
-          ↓
-6. Role-based dashboard rendered
-          ↓
-7. Protected routes accessible
-```
-
-## 🛠️ Development Workflow
-
-### Starting Development
-
-```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev              # Starts on port 5000
-
-# Terminal 2 - Frontend  
-npm run dev              # Starts on port 3000
-```
-
-### Making Changes
-
-1. **Backend Changes:**
-   - Edit files in `backend/src/`
-   - Changes auto-reload with `tsx watch`
-
-2. **Frontend Changes:**
-   - Edit files in `src/`
-   - Changes hot-reload with Vite
-
-3. **Database Changes:**
-   ```bash
-   cd backend
-   # Edit prisma/schema.prisma
-   npx prisma migrate dev
-   npx prisma generate
-   ```
-
-## 📦 Build & Deploy
+##  Build & Deploy
 
 ### Development Build
 
@@ -549,34 +319,13 @@ npm start              # Runs on PORT from .env
 | Configure build | `vite.config.ts` |
 | Set environment vars | `backend/.env` |
 
-## 📈 Scalability
-
-The structure supports growth:
-
-- **New Features:** Add to `src/components/`
-- **New Endpoints:** Add to `backend/src/routes/`
-- **New Roles:** Extend in `components/[role]/`
-- **New Services:** Add to `src/services/`
-- **New Tables:** Update `prisma/schema.prisma`
-
-## 🤝 Contributing
-
-When adding to the project:
-
-1. **Follow the structure** - Keep files organized
-2. **Document changes** - Update relevant READMEs
-3. **Use existing patterns** - Match current code style
-4. **Test thoroughly** - Both frontend and backend
-5. **Update docs** - Keep documentation current
-
-## 📚 Related Documentation
+## � Related Documentation
 
 - [Main README](../README.md) - Project overview
-- [Architecture](./ARCHITECTURE.md) - System design
-- [Backend README](../backend/README.md) - API details
-- [Frontend README](../src/README.md) - UI details
-- [Configuration Guide](../Configuration/README.md) - Setup help
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design & API details
+- [ARCHITECTURE_INTEGRATION.md](./ARCHITECTURE_INTEGRATION.md) - Component details
+- [QUICKSTART.md](./QUICKSTART.md) - 5-minute setup guide
 
 ---
 
-**Questions?** Check the [Documentation Index](./INDEX.md) or the main [README](../README.md).
+**Questions?** Check [../README.md](../README.md) for the main documentation.

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Auto Fleet](../frontend/src/assets/logo.png)
+<img src="../frontend/src/assets/logo.png" alt="Auto Fleet" width="80" />
 
 **Get up and running with Auto Fleet in 5 minutes!**
 

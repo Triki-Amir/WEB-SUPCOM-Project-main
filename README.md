@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Auto Fleet Logo](./frontend/src/assets/logo.png)
+<img src="./frontend/src/assets/logo.png" alt="Auto Fleet Logo" width="120" />
 
 **A comprehensive car rental management platform built with cutting-edge technologies**
 
@@ -230,7 +230,19 @@ cd ..
 
 #### 4️⃣ Configure Database
 
-Create a PostgreSQL database:
+**Option A: Using Docker (Recommended)**
+
+```bash
+# Start PostgreSQL with Docker Compose
+docker-compose up -d
+```
+
+This will start PostgreSQL on port 5432 with:
+- Database: `car_rental_db`
+- User: `postgres`
+- Password: `admin`
+
+**Option B: Local PostgreSQL Installation**
 
 ```bash
 # Using PostgreSQL command line
@@ -254,7 +266,12 @@ cp .env.example .env
 Update the `.env` file with your configuration:
 
 ```env
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/car_rental?schema=public"
+# For Docker setup (recommended)
+DATABASE_URL="postgresql://postgres:admin@localhost:5432/car_rental_db?schema=public"
+
+# For local PostgreSQL
+# DATABASE_URL="postgresql://postgres:your_password@localhost:5432/car_rental?schema=public"
+
 JWT_SECRET="your-secret-jwt-key-change-this"
 PORT=5000
 NODE_ENV=development

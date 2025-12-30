@@ -610,102 +610,20 @@ User (1) ───────────(N) Notification
 
 ## 🔄 Component Architecture
 
-### State Management
-- **AuthContext**: Global authentication state
-- **Component State**: Local UI state with useState/useReducer
-- **Form State**: React Hook Form for complex forms
+**State Management:** AuthContext (Global) • Component State (Local) • React Hook Form (Forms)
 
-### Component Hierarchy
-
-```
-App (AuthProvider)
-  ├── HomePage (Public)
-  ├── LoginPage (Public)
-  └── Dashboard (Protected)
-      ├── ClientDashboard
-      │   ├── VehicleSearch
-      │   ├── MyBookings
-      │   └── IncidentReporting
-      ├── AdminDashboard
-      │   ├── FleetManagement
-      │   ├── BookingManagement
-      │   ├── UserManagement
-      │   └── MaintenanceTracking
-      └── DirectionDashboard
-          ├── Analytics
-          ├── Reports
-          └── KPIs
-```
+**Hierarchy:** App → [HomePage, LoginPage, Dashboard(CLIENT/ADMIN/DIRECTION)]
 
 ## 📦 Build & Deployment
 
-### Development
-```bash
-# Frontend
-npm run dev          # Starts Vite dev server on port 3000
+**Development:** `npm run dev` (Frontend + Backend)  
+**Production:** `npm run build` then `npm start`
 
-# Backend
-cd backend
-npm run dev          # Starts Express server on port 5000
-```
+## 🔒 Security
 
-### Production
-```bash
-# Frontend
-npm run build        # Builds to /build directory
-
-# Backend
-cd backend
-npm run build        # Compiles TypeScript to /dist
-npm start            # Runs production server
-```
-
-## 🔒 Security Considerations
-
-1. **Authentication**: JWT tokens with expiration
-2. **Password Security**: Bcrypt hashing (10 rounds)
-3. **API Validation**: Zod schemas for request validation
-4. **Role-Based Access**: Middleware-enforced permissions
-5. **CORS**: Configured for specific origins
-6. **SQL Injection**: Protected by Prisma ORM
-
-## 🚀 Future Enhancements
-
-1. **Real-time Features**: WebSocket for live notifications
-2. **Payment Integration**: Stripe or PayPal for online payments
-3. **Mobile App**: React Native application
-4. **Advanced Analytics**: ML-based predictions
-5. **Multi-language**: i18n support
-6. **Testing**: Comprehensive unit and integration tests
-
-## 📊 Performance Optimization
-
-1. **Code Splitting**: Lazy loading for route components
-2. **Image Optimization**: Compressed assets
-3. **Database Indexing**: Optimized Prisma queries
-4. **Caching**: API response caching strategies
-5. **Bundle Optimization**: Vite's optimized builds
-
-## 🧪 Testing Strategy
-
-### Frontend
-- Component testing with React Testing Library
-- E2E testing with Playwright/Cypress
-- Visual regression testing
-
-### Backend
-- Unit tests for business logic
-- Integration tests for API endpoints
-- Database migration testing
-
-## 📈 Monitoring & Logging
-
-1. **Application Logs**: Structured logging
-2. **Error Tracking**: Centralized error monitoring
-3. **Performance Monitoring**: API response times
-4. **Database Monitoring**: Query performance
-5. **User Analytics**: Usage patterns and metrics
+JWT tokens • Bcrypt hashing • Zod validation • Role-based access • CORS • Prisma ORM protection
 
 ---
 
-For more detailed information on specific components, please refer to the respective documentation files in the `/Documentation` directory.
+💡 **See [ARCHITECTURE_INTEGRATION.md](./ARCHITECTURE_INTEGRATION.md) for detailed data flow**  
+💡 **See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for complete file organization**
