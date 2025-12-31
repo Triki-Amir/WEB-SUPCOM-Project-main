@@ -90,7 +90,7 @@ export function ClientIncidents() {
   };
 
   const handleEmergencyCall = () => {
-    toast.info("Appel d'urgence vers le +216 71 XXX XXX");
+    toast.info("Appel d'urgence vers le +216 71 315 788");
   };
 
   const getStatusBadge = (status: string) => {

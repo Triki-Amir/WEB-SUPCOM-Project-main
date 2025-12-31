@@ -114,7 +114,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     }
 
     if (vehicle.status !== 'AVAILABLE') {
-      return res.status(400).json({ error: 'Véhicule non disponible' });
+      return res.status(400).json({ error: 'Voiture déjà réservée' });
     }
 
     // Check for conflicting bookings
@@ -140,7 +140,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     });
 
     if (conflictingBookings.length > 0) {
-      return res.status(400).json({ error: 'Le véhicule est déjà réservé pour ces dates' });
+      return res.status(400).json({ error: 'Voiture déjà réservée' });
     }
 
     // Create booking and update vehicle status

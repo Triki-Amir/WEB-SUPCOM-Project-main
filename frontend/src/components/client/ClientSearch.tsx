@@ -86,14 +86,6 @@ export function ClientSearch() {
         queryParams.city = filters.location;
       }
 
-      // Add date filters
-      if (filters.startDate) {
-        queryParams.startDate = filters.startDate.toISOString();
-      }
-      if (filters.endDate) {
-        queryParams.endDate = filters.endDate.toISOString();
-      }
-
       const vehiclesData = await api.vehicles.getAll(queryParams);
       setFilteredVehicles(vehiclesData as Vehicle[]);
       toast.success(`${vehiclesData.length} véhicule(s) trouvé(s)`);

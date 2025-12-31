@@ -141,8 +141,8 @@ const apiRequest = async <T>(
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      const error = await response.json().catch(() => ({ error: 'An error occurred' }));
+      throw new Error(error.error || error.message || `HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
@@ -492,6 +492,19 @@ export const userService = {
     return apiRequest('/users/me', {
       method: 'PUT',
       body: JSON.stringify(userData),
+    });
+  },
+
+  /**
+   * Update user password
+   */
+  updatePassword: async (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    return apiRequest('/users/me/password', {
+      method: 'PUT',
+      body: JSON.stringify(passwordData),
     });
   },
 

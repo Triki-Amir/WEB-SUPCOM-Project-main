@@ -1,371 +1,740 @@
-# 🚗 Auto Fleet - Système de Location de Véhicules
+# 🚗 Auto Fleet - Modern Car Rental Management System
 
-Application web moderne de gestion de location de véhicules en Tunisie, construite avec React, Node.js, Express, Prisma et PostgreSQL.
+<div align="center">
 
-![Tech Stack](./src/assets/651c45b1865c51f174a583211861ca76520c7033.png)
+<img src="./frontend/src/assets/logo.png" alt="Auto Fleet Logo" width="120" />
+
+**A comprehensive car rental management platform built with cutting-edge technologies**
+
+[![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+
+[Features](#-features) • [Screenshots](#-screenshots) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Tech Stack](#-tech-stack)
+
+</div>
+
+---
+
+## 🌟 Overview
+
+Auto Fleet is a modern, full-stack web application designed for efficient car rental management in Tunisia. Built with React, Node.js, and PostgreSQL, it provides a seamless experience for clients, administrators, and management teams.
+
+### 🎯 Key Highlights
+
+✨ **Role-Based Dashboards** - Tailored interfaces for Clients, Admins, and Directors  
+🚗 **Real-Time Fleet Management** - Track vehicles, bookings, and maintenance  
+📊 **Advanced Analytics** - Comprehensive reports and KPIs for decision-making  
+🔐 **Secure Authentication** - JWT-based authentication with role-based access  
+📱 **Responsive Design** - Works seamlessly on desktop, tablet, and mobile  
+⚡ **Modern Tech Stack** - Built with the latest web technologies  
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Home Page
+Discover available vehicles and explore our platform features.
+
+![Home Page](./frontend/src/assets/home_page_screanshot.png)
+
+### 🔐 Login Interface
+Secure authentication with role-based access control.
+
+![Login Page](./frontend/src/assets/login_screanshot.png)
+
+### 👤 User Dashboard
+Intuitive client interface for booking and managing rentals.
+
+![User Interface](./frontend/src/assets/user_interface_screanshot.png)
+
+### 🚗 Admin Fleet Management
+Powerful tools for managing the entire vehicle fleet.
+
+![Admin Fleet](./frontend/src/assets/parc_admin_screanshot.png)
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### 👤 Client Portal
+
+- 🔐 **Secure Authentication**  
+  Register and login with JWT tokens
+  
+- 🔍 **Vehicle Search**  
+  Advanced filters by type, station, dates
+  
+- 📅 **Booking Management**  
+  Create, view, and manage reservations
+  
+- 📜 **Rental History**  
+  Complete history of past bookings
+  
+- 🚨 **Incident Reporting**  
+  Report and track vehicle issues
+  
+- 📬 **Real-Time Notifications**  
+  Stay updated on booking status
+  
+- 👤 **Profile Management**  
+  Update personal information
+
+</td>
+<td width="33%" valign="top">
+
+### 👨‍💼 Admin Dashboard
+
+- 📊 **Comprehensive Dashboard**  
+  Real-time statistics and insights
+  
+- 🚗 **Fleet Management**  
+  Complete vehicle CRUD operations
+  
+- 📝 **Booking Oversight**  
+  Manage all customer reservations
+  
+- 🔧 **Maintenance Tracking**  
+  Schedule and monitor vehicle maintenance
+  
+- 📍 **Station Management**  
+  Manage pickup/dropoff locations
+  
+- 👥 **User Administration**  
+  Manage client accounts and roles
+  
+- 🚨 **Alert System**  
+  Handle incidents and notifications
+  
+- 📈 **Reports Generation**  
+  Generate operational reports
+
+</td>
+<td width="33%" valign="top">
+
+### 👔 Director Portal
+
+- 📊 **Advanced Analytics**  
+  Deep insights into operations
+  
+- 📈 **Performance Metrics**  
+  Track business performance
+  
+- 💰 **Financial Reports**  
+  Revenue and profit analysis
+  
+- 🎯 **KPIs Dashboard**  
+  Key performance indicators
+  
+- 📉 **Trend Analysis**  
+  Historical data visualization
+  
+- 🔄 **Fleet Utilization**  
+  Vehicle usage statistics
+  
+- 📅 **Booking Analytics**  
+  Reservation patterns and trends
+  
+- 🏆 **Strategic Insights**  
+  Data-driven decision support
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🛠️ Tech Stack
+
+![Tech Stack](./frontend/src/assets/651c45b1865c51f174a583211861ca76520c7033.png)
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎨 Frontend
+
+| Technology | Purpose | Version |
+|------------|---------|----------|
+| ![React](https://img.shields.io/badge/-React-61DAFB?style=flat&logo=react&logoColor=black) | UI Framework | 18.x |
+| ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) | Type Safety | 5.x |
+| ![Vite](https://img.shields.io/badge/-Vite-646CFF?style=flat&logo=vite&logoColor=white) | Build Tool | Latest |
+| ![Tailwind CSS](https://img.shields.io/badge/-Tailwind-38B2AC?style=flat&logo=tailwind-css&logoColor=white) | Styling | 3.x |
+| ![Radix UI](https://img.shields.io/badge/-Radix_UI-161618?style=flat&logo=radix-ui&logoColor=white) | Components | Latest |
+| ![Framer Motion](https://img.shields.io/badge/-Framer_Motion-0055FF?style=flat&logo=framer&logoColor=white) | Animations | Latest |
+| ![Recharts](https://img.shields.io/badge/-Recharts-FF6B6B?style=flat) | Charts | Latest |
+| ![Lucide React](https://img.shields.io/badge/-Lucide-F56565?style=flat) | Icons | Latest |
+
+</td>
+<td width="50%">
+
+### ⚙️ Backend
+
+| Technology | Purpose | Version |
+|------------|---------|----------|
+| ![Node.js](https://img.shields.io/badge/-Node.js-339933?style=flat&logo=node.js&logoColor=white) | Runtime | 18+ |
+| ![Express](https://img.shields.io/badge/-Express-000000?style=flat&logo=express&logoColor=white) | Web Framework | 4.x |
+| ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) | Type Safety | 5.x |
+| ![Prisma](https://img.shields.io/badge/-Prisma-2D3748?style=flat&logo=prisma&logoColor=white) | ORM | Latest |
+| ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white) | Database | 14+ |
+| ![JWT](https://img.shields.io/badge/-JWT-000000?style=flat&logo=json-web-tokens&logoColor=white) | Auth Tokens | Latest |
+| ![Bcrypt](https://img.shields.io/badge/-Bcrypt-CA0000?style=flat) | Password Hash | Latest |
+| ![Zod](https://img.shields.io/badge/-Zod-3E67B1?style=flat) | Validation | Latest |
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🚀 Quick Start
 
-```bash
-# Install frontend dependencies
-npm install
+### 📋 Prerequisites
 
-# Install backend dependencies
-cd backend
-npm install
+Before you begin, ensure you have the following installed:
 
-# Start backend (in backend directory)
-npm run dev          # Runs on http://localhost:5000
+| Requirement | Version | Download |
+|-------------|---------|----------|
+| Node.js | 18+ | [nodejs.org](https://nodejs.org/) |
+| PostgreSQL | 14+ | [postgresql.org](https://www.postgresql.org/) |
+| npm/yarn | Latest | Included with Node.js |
 
-# Start frontend (in root directory)
-npm run dev          # Runs on http://localhost:3000
-```
+### ⚡ Installation
 
-📖 **Detailed guide:** [QUICKSTART.md](./Documentation/QUICKSTART.md)
-
-## 📂 Structure du Projet
-
-Le projet est organisé de manière claire et logique:
-
-```
-WEB-SUPCOM-Project/
-├── 📁 backend/          # API Backend (Express + Prisma)
-├── 📁 src/              # Application Frontend (React)
-├── 📁 Documentation/    # Toute la documentation
-└── 📁 Configuration/    # Guide de configuration
-```
-
-**Pour plus de détails:** Consultez [PROJECT_STRUCTURE.md](./Documentation/PROJECT_STRUCTURE.md)
-
-## 📋 Table des matières
-
-- [Fonctionnalités](#-fonctionnalités)
-- [Technologies utilisées](#️-technologies-utilisées)
-- [Prérequis](#-prérequis)
-- [Installation](#-installation)
-- [Configuration](#️-configuration)
-- [Structure du projet](#-structure-du-projet)
-- [Documentation](#-documentation)
-- [Comptes de test](#-comptes-de-test)
-
-## ✨ Fonctionnalités
-
-### Espace Client
-
-- 🔐 Inscription et connexion sécurisées
-- 🚙 Recherche et réservation de véhicules
-- 📅 Gestion des réservations en cours et historique
-- 🚨 Déclaration et suivi des incidents
-- 📬 Notifications en temps réel
-- 👤 Gestion du profil utilisateur
-
-### Espace Administration
-
-- 📊 Tableau de bord avec statistiques
-- 🚗 Gestion de la flotte de véhicules
-- 📝 Gestion des réservations
-- 🔧 Suivi de la maintenance
-- 📍 Gestion des stations
-- 👥 Gestion des utilisateurs
-- 🚨 Gestion des alertes et incidents
-
-### Espace Direction
-
-- 📈 Analytics et rapports détaillés
-- 📊 Vue d'ensemble des performances
-- 📉 Statistiques financières
-- 🎯 Indicateurs clés de performance (KPIs)
-
-## 🛠️ Technologies utilisées
-
-### Frontend
-
-- **React 18** - Framework UI
-- **TypeScript** - Typage statique
-- **Vite** - Build tool et dev server
-- **Tailwind CSS** - Styling
-- **Radix UI** - Composants UI accessibles
-- **Framer Motion** - Animations
-- **Lucide React** - Icônes
-- **Recharts** - Graphiques et visualisations
-
-### Backend
-
-- **Node.js** - Runtime JavaScript
-- **Express** - Framework web
-- **TypeScript** - Typage statique
-- **Prisma** - ORM pour PostgreSQL
-- **PostgreSQL** - Base de données
-- **JWT** - Authentification
-- **Bcrypt** - Hachage des mots de passe
-- **Zod** - Validation des données
-
-## 📦 Prérequis
-
-Avant de commencer, assurez-vous d'avoir installé :
-
-- [Node.js](https://nodejs.org/) (v18 ou supérieur)
-- [PostgreSQL](https://www.postgresql.org/) (v14 ou supérieur)
-- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
-
-## 🚀 Installation
-
-### 1. Cloner le projet
+#### 1️⃣ Clone the Repository
 
 ```bash
-git clone <url-du-repo>
-cd "car rental"
+git clone <repository-url>
+cd WEB-SUPCOM-Project-main
 ```
 
-### 2. Installer les dépendances du frontend
+#### 2️⃣ Install Frontend Dependencies
 
-```powershell
+```bash
 npm install
 ```
 
-### 3. Installer les dépendances du backend
+#### 3️⃣ Install Backend Dependencies
 
-```powershell
+```bash
 cd backend
 npm install
+cd ..
 ```
 
-## ⚙️ Configuration
+#### 4️⃣ Configure Database
 
-### 1. Configuration de la base de données
+**Option A: Using Docker (Recommended)**
 
-Créez une base de données PostgreSQL :
+```bash
+# Start PostgreSQL with Docker Compose
+docker-compose up -d
+```
 
-```sql
+This will start PostgreSQL on port 5432 with:
+- Database: `car_rental_db`
+- User: `postgres`
+- Password: `admin`
+
+**Option B: Local PostgreSQL Installation**
+
+```bash
+# Using PostgreSQL command line
+createdb car_rental
+
+# Or using psql
+psql -U postgres
 CREATE DATABASE car_rental;
+\q
 ```
 
-### 2. Configuration des variables d'environnement
+#### 5️⃣ Setup Environment Variables
 
-Copiez le fichier `.env.example` vers `.env` dans le dossier `backend` :
+Create a `.env` file in the `backend` folder:
 
-```powershell
+```bash
 cd backend
-copy .env.example .env
+cp .env.example .env
 ```
 
-Modifiez le fichier `.env` avec vos informations :
+Update the `.env` file with your configuration:
 
 ```env
-DATABASE_URL="postgresql://postgres:votre_password@localhost:5432/car_rental?schema=public"
-JWT_SECRET="votre-clé-secrète-jwt"
+# For Docker setup (recommended)
+DATABASE_URL="postgresql://postgres:admin@localhost:5432/car_rental_db?schema=public"
+
+# For local PostgreSQL
+# DATABASE_URL="postgresql://postgres:your_password@localhost:5432/car_rental?schema=public"
+
+JWT_SECRET="your-secret-jwt-key-change-this"
 PORT=5000
 NODE_ENV=development
 ```
 
-### 3. Exécuter les migrations Prisma
+#### 6️⃣ Initialize Database
 
-```powershell
-# Dans le dossier backend
+Run Prisma migrations and seed the database:
+
+```bash
+# In the backend folder
 npx prisma generate
 npx prisma migrate dev
-```
-
-### 4. Peupler la base de données (seed)
-
-```powershell
-# Dans le dossier backend
 npm run prisma:seed
 ```
 
-Cette commande créera :
+<details>
+<summary>📦 What gets seeded?</summary>
 
-- 3 utilisateurs de test (client, admin, direction)
-- 3 stations (Tunis, Sfax, Sousse)
-- 6 véhicules
-- 2 réservations
-- 1 incident
-- 1 enregistrement de maintenance
-- 2 notifications
+The seed script creates:
+- ✅ 3 test users (Client, Admin, Director)
+- ✅ 3 stations (Tunis, Sfax, Sousse)
+- ✅ 6 vehicles with different categories
+- ✅ 2 sample bookings
+- ✅ 1 incident report
+- ✅ 1 maintenance record
+- ✅ 2 notifications
 
-## 🎮 Utilisation
+</details>
 
-### Démarrer le backend
+---
 
-```powershell
+## 🎮 Running the Application
+
+### Start Development Servers
+
+You'll need **two terminal windows**:
+
+#### Terminal 1 - Backend Server
+
+```bash
 cd backend
 npm run dev
 ```
 
-Le serveur API sera accessible sur `http://localhost:5000`
+✅ Backend API running at: `http://localhost:5000`
 
-### Démarrer le frontend
+#### Terminal 2 - Frontend Application
 
-Dans un nouveau terminal :
-
-```powershell
-# À la racine du projet
+```bash
+# In project root
 npm run dev
 ```
 
-L'application sera accessible sur `http://localhost:3000` (ou 3001 si 3000 est occupé)
+✅ Frontend app running at: `http://localhost:3000`
 
-### Ouvrir Prisma Studio (optionnel)
+### 🎯 Access the Application
 
-Pour gérer visuellement la base de données :
+Open your browser and navigate to:
 
-```powershell
+```
+http://localhost:3000
+```
+
+### 🗄️ Database Management (Optional)
+
+Launch Prisma Studio for visual database management:
+
+```bash
 cd backend
 npm run prisma:studio
 ```
 
-## 📁 Structure du projet
+✅ Prisma Studio running at: `http://localhost:5555`
+
+---
+
+## 🔑 Test Accounts
+
+Use these credentials to explore different user roles:
+
+<table>
+<tr>
+<th>Role</th>
+<th>Email</th>
+<th>Password</th>
+<th>Access Level</th>
+</tr>
+<tr>
+<td>👤 <strong>Client</strong></td>
+<td><code>client@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Vehicle search, bookings, incident reports</td>
+</tr>
+<tr>
+<td>👨‍💼 <strong>Admin</strong></td>
+<td><code>admin@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Full system management, fleet, users, bookings</td>
+</tr>
+<tr>
+<td>👔 <strong>Director</strong></td>
+<td><code>direction@autofleet.tn</code></td>
+<td><code>password123</code></td>
+<td>Analytics, reports, KPIs, strategic insights</td>
+</tr>
+</table>
+
+> ⚠️ **Important:** Change these passwords in production environments!
+
+---
+
+## 📂 Project Structure
 
 ```
 WEB-SUPCOM-Project/
 │
-├── backend/                         # Backend (API)
-│   ├── src/                         # Backend source code (Express)
-│   │   ├── routes/                 # API route handlers
-│   │   ├── middleware/             # Express middleware (auth, validation)
-│   │   ├── server.ts               # Express server setup
-│   │   └── index.ts                # Application entry point
-│   ├── prisma/                      # Prisma schema & database seed
-│   │   ├── schema.prisma           # Database schema definition
-│   │   └── seed.ts                 # Database seeding script
-│   ├── package.json                # Backend dependencies
-│   └── README.md                   # Backend documentation
+├── 📁 backend/                     # Backend API Server
+│   ├── 📁 src/
+│   │   ├── 📁 routes/             # API endpoints (auth, vehicles, bookings, etc.)
+│   │   ├── 📁 middleware/         # Auth, validation middleware
+│   │   ├── 📁 lib/                # Prisma client
+│   │   ├── server.ts              # Express server configuration
+│   │   └── index.ts               # Application entry point
+│   ├── 📁 prisma/
+│   │   ├── schema.prisma          # Database schema
+│   │   ├── seed.ts                # Database seeding
+│   │   └── migrations/            # Migration history
+│   ├── package.json
+│   └── README.md
 │
-├── src/                             # Frontend (React – single app)
-│   ├── components/                 # UI components (admin, client, shared)
-│   │   ├── admin/                  # Admin dashboard components
-│   │   ├── client/                 # Client dashboard components
-│   │   ├── direction/              # Direction dashboard components
-│   │   ├── auth/                   # Authentication components
-│   │   ├── ui/                     # Shared UI components
-│   │   └── *.tsx                   # Other shared components
-│   ├── contexts/                   # React Contexts (AuthContext, etc.)
-│   │   └── AuthContext.tsx         # Authentication state management
-│   ├── services/                   # API services (api.ts, requests)
-│   │   └── api.ts                  # Centralized API client
-│   ├── assets/                     # Static assets (images, icons)
-│   ├── styles/                     # Global styles
-│   ├── App.tsx                     # Root application component
-│   ├── main.tsx                    # React entry point
-│   └── README.md                   # Frontend documentation
+├── 📁 frontend/src/                # Frontend Application
+│   ├── 📁 components/
+│   │   ├── 📁 admin/              # Admin dashboard components
+│   │   ├── 📁 client/             # Client portal components
+│   │   ├── 📁 direction/          # Director dashboard components
+│   │   ├── 📁 auth/               # Authentication pages
+│   │   └── 📁 ui/                 # Reusable UI components
+│   ├── 📁 contexts/
+│   │   └── AuthContext.tsx        # Global auth state
+│   ├── 📁 services/
+│   │   └── api.ts                 # API client & requests
+│   ├── 📁 assets/                 # Images, logos, screenshots
+│   ├── 📁 styles/                 # Global CSS
+│   ├── App.tsx                    # Root component
+│   └── main.tsx                   # React entry point
 │
-├── Documentation/                  # Project documentation
-│   ├── INDEX.md                    # Navigation / table of contents
-│   ├── ARCHITECTURE.md             # System architecture
-│   ├── README.md                   # Main documentation guide
-│   ├── architecture_frontend.md    # Frontend architecture details
-│   ├── figma_import_steps.md       # Design import workflow
-│   ├── justification_du_choix_du_theme.md  # Theme selection
-│   ├── README_DEVELOPMENT.md       # Development setup guide
-│   ├── Guidelines.md               # Coding guidelines
-│   └── Attributions.md             # Credits and attributions
+├── 📁 Documentation/               # Comprehensive documentation
+│   ├── ARCHITECTURE.md            # System architecture
+│   ├── ARCHITECTURE_INTEGRATION.md # Integration guide
+│   ├── PROJECT_STRUCTURE.md       # Project organization
+│   └── QUICKSTART.md              # Quick start guide
 │
-├── Configuration/                  # Configuration guide
-│   └── README.md                   # Guide to all configuration files
+├── 📁 Configuration/               # Configuration guides
+│   └── README.md
 │
-├── index.html                      # Vite HTML entry point (root level)
-├── package.json                    # Frontend dependencies (root level)
-├── vite.config.ts                  # Vite configuration (root level)
-├── tsconfig.json                   # TypeScript config (root level)
-└── README.md                       # Global project overview (this file)
+├── 📄 index.html                  # HTML entry point
+├── 📄 package.json                # Frontend dependencies
+├── 📄 vite.config.ts              # Vite configuration
+├── 📄 docker-compose.yml          # Docker setup
+└── 📄 README.md                   # This file
 ```
 
-**Navigation simplifiée:**
-- `/backend` - Tout le code backend (API, base de données)
-- `/src` - Tout le code frontend (composants React, services)
-- `/Documentation` - Toute la documentation du projet
-- `/Configuration` - Guide des fichiers de configuration (les fichiers réels sont à la racine)
-- Racine du projet - Fichiers de configuration (package.json, vite.config.ts, etc.)
+### 🎯 Quick Navigation
 
-## 📚 Documentation
+| Directory | Purpose | Key Files |
+|-----------|---------|-----------|
+| `/backend` | API & Database | `server.ts`, `schema.prisma` |
+| `/frontend/src` | React Application | `App.tsx`, `api.ts` |
+| `/Documentation` | Guides & Docs | `ARCHITECTURE.md`, `QUICKSTART.md` |
+| `/Configuration` | Setup Help | `README.md` |
 
-Pour une documentation complète, consultez le dossier `/Documentation`:
-
-- **[Documentation/INDEX.md](./Documentation/INDEX.md)** - Table des matières complète
-- **[Documentation/ARCHITECTURE.md](./Documentation/ARCHITECTURE.md)** - Architecture du système
-- **[Documentation/README_DEVELOPMENT.md](./Documentation/README_DEVELOPMENT.md)** - Guide de développement
-- **[backend/README.md](./backend/README.md)** - Documentation backend spécifique
-- **[src/README.md](./src/README.md)** - Documentation frontend spécifique
-
-## 🔌 API Endpoints
-
-Pour la liste complète des endpoints API, consultez la [documentation backend](./backend/README.md#-api-endpoints).
-
-**Endpoints principaux:**
-- Authentification (`/api/auth`)
-- Véhicules (`/api/vehicles`)
-- Réservations (`/api/bookings`)
-- Stations (`/api/stations`)
-- Incidents (`/api/incidents`)
-- Utilisateurs (`/api/users`)
-- Maintenance (`/api/maintenance`)
-
-## 👤 Comptes de test
-
-Après le seed, vous pouvez vous connecter avec :
-
-### Client
-
-- **Email:** client@autofleet.tn
-- **Mot de passe:** password123
-
-### Administrateur
-
-- **Email:** admin@autofleet.tn
-- **Mot de passe:** password123
-
-### Direction
-
-- **Email:** direction@autofleet.tn
-- **Mot de passe:** password123
-
-## 🐛 Dépannage
-
-### Le serveur Vite ne démarre pas
-
-- Vérifiez que le port 3000 est libre ou utilisez un autre port
-- Supprimez `node_modules` et réinstallez : `npm install`
-
-### Erreurs de connexion à la base de données
-
-- Vérifiez que PostgreSQL est démarré
-- Vérifiez les informations dans `.env`
-- Assurez-vous que la base de données existe
-
-### Erreurs Prisma
-
-- Exécutez `npx prisma generate` après toute modification du schéma
-- Exécutez `npx prisma migrate reset` pour réinitialiser la base de données
-
-## 📝 Scripts disponibles
-
-### Frontend
-
-```powershell
-npm run dev          # Démarre le serveur de développement
-npm run build        # Compile pour la production
-```
-
-### Backend
-
-```powershell
-npm run dev                  # Démarre le serveur en mode développement
-npm run build                # Compile TypeScript
-npm start                    # Démarre le serveur en production
-npm run prisma:generate      # Génère le client Prisma
-npm run prisma:migrate       # Exécute les migrations
-npm run prisma:seed          # Peuple la base de données
-npm run prisma:studio        # Ouvre Prisma Studio
-```
-
-## 📄 Licence
-
-Ce projet est sous licence MIT.
-
-## 👥 Contributeurs
-
-Développé pour le projet Auto Fleet - Location de véhicules en Tunisie.
+📖 **Detailed structure:** See [PROJECT_STRUCTURE.md](./Documentation/PROJECT_STRUCTURE.md)
 
 ---
 
-**Note:** Ce projet utilise les technologies modernes HTML5, CSS3, JavaScript (React), Node.js et PostgreSQL comme spécifié dans les exigences.
+## 📚 Documentation
+
+Comprehensive documentation is available in the `/Documentation` folder:
+
+| Document | Description |
+|----------|-------------|
+| [QUICKSTART.md](./Documentation/QUICKSTART.md) | Get started in 5 minutes |
+| [ARCHITECTURE.md](./Documentation/ARCHITECTURE.md) | System architecture & design |
+| [ARCHITECTURE_INTEGRATION.md](./Documentation/ARCHITECTURE_INTEGRATION.md) | Integration & data flow |
+| [PROJECT_STRUCTURE.md](./Documentation/PROJECT_STRUCTURE.md) | Project organization |
+| [Backend README](./backend/README.md) | Backend API documentation |
+
+---
+
+## 🔌 API Endpoints
+
+The backend provides a comprehensive RESTful API:
+
+<details>
+<summary><strong>Authentication</strong></summary>
+
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
+
+</details>
+
+<details>
+<summary><strong>Vehicles</strong></summary>
+
+- `GET /api/vehicles` - List all vehicles (with filters)
+- `GET /api/vehicles/:id` - Get vehicle details
+- `POST /api/vehicles` - Create vehicle (Admin)
+- `PUT /api/vehicles/:id` - Update vehicle (Admin)
+- `DELETE /api/vehicles/:id` - Delete vehicle (Admin)
+
+</details>
+
+<details>
+<summary><strong>Bookings</strong></summary>
+
+- `GET /api/bookings` - List user bookings
+- `GET /api/bookings/:id` - Get booking details
+- `POST /api/bookings` - Create booking
+- `PATCH /api/bookings/:id/cancel` - Cancel booking
+- `PATCH /api/bookings/:id/complete` - Complete booking (Admin)
+
+</details>
+
+<details>
+<summary><strong>Stations</strong></summary>
+
+- `GET /api/stations` - List all stations
+- `GET /api/stations/:id` - Get station details
+- `POST /api/stations` - Create station (Admin)
+- `PUT /api/stations/:id` - Update station (Admin)
+
+</details>
+
+<details>
+<summary><strong>Incidents</strong></summary>
+
+- `GET /api/incidents` - List incidents
+- `POST /api/incidents` - Report incident
+- `PATCH /api/incidents/:id` - Update incident status (Admin)
+
+</details>
+
+<details>
+<summary><strong>Users</strong></summary>
+
+- `GET /api/users` - List all users (Admin)
+- `GET /api/users/:id` - Get user details
+- `PATCH /api/users/:id` - Update user (Admin)
+- `DELETE /api/users/:id` - Delete user (Admin)
+
+</details>
+
+<details>
+<summary><strong>Analytics</strong></summary>
+
+- `GET /api/analytics/dashboard` - Dashboard statistics (Director)
+- `GET /api/analytics/revenue` - Revenue reports (Director)
+- `GET /api/analytics/fleet-usage` - Fleet utilization (Director)
+
+</details>
+
+📖 **Full API documentation:** [Backend README](./backend/README.md)
+
+---
+
+## 🐛 Troubleshooting
+
+<details>
+<summary><strong>Port Already in Use</strong></summary>
+
+**Problem:** Port 3000 or 5000 is already in use
+
+**Solution:**
+```bash
+# Frontend - Edit vite.config.ts
+server: { port: 3001 }
+
+# Backend - Edit backend/.env
+PORT=5001
+```
+</details>
+
+<details>
+<summary><strong>Database Connection Error</strong></summary>
+
+**Problem:** Cannot connect to PostgreSQL
+
+**Solution:**
+1. Check PostgreSQL is running: `pg_isready`
+2. Verify DATABASE_URL in `backend/.env`
+3. Ensure database exists: `createdb car_rental`
+4. Test connection: `psql -U postgres -d car_rental`
+</details>
+
+<details>
+<summary><strong>Prisma Errors</strong></summary>
+
+**Problem:** Prisma client errors or migration issues
+
+**Solution:**
+```bash
+cd backend
+npx prisma generate      # Regenerate client
+npx prisma migrate reset # Reset database (WARNING: deletes data)
+npx prisma migrate dev   # Apply migrations
+```
+</details>
+
+<details>
+<summary><strong>Module Not Found</strong></summary>
+
+**Problem:** Missing dependencies or module errors
+
+**Solution:**
+```bash
+# Clean install
+rm -rf node_modules package-lock.json
+npm install
+
+# Backend clean install
+cd backend
+rm -rf node_modules package-lock.json
+npm install
+```
+</details>
+
+<details>
+<summary><strong>Build Errors</strong></summary>
+
+**Problem:** TypeScript or build errors
+
+**Solution:**
+```bash
+# Clear cache and rebuild
+npm run build -- --force
+
+# Backend rebuild
+cd backend
+rm -rf dist
+npm run build
+```
+</details>
+
+---
+
+## 📝 Available Scripts
+
+### Frontend Commands
+
+```bash
+npm run dev          # Start development server (port 3000)
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
+
+### Backend Commands
+
+```bash
+cd backend
+
+# Development
+npm run dev                  # Start dev server with hot reload
+
+# Production
+npm run build                # Compile TypeScript
+npm start                    # Start production server
+
+# Database
+npm run prisma:generate      # Generate Prisma client
+npm run prisma:migrate       # Run migrations
+npm run prisma:seed          # Seed database
+npm run prisma:studio        # Open Prisma Studio GUI
+npm run prisma:reset         # Reset database (deletes all data)
+```
+
+---
+
+## 🔒 Security
+
+### Authentication
+- JWT token-based authentication
+- Bcrypt password hashing (10 rounds)
+- Role-based access control (RBAC)
+
+### Best Practices
+- Environment variables for sensitive data
+- SQL injection protection via Prisma ORM
+- Input validation with Zod schemas
+- CORS configuration
+
+---
+
+## 🚀 Deployment
+
+### Production Build
+
+```bash
+# Frontend
+npm run build
+# Deploy /dist folder to hosting service
+
+# Backend
+cd backend
+npm run build
+# Deploy with Node.js hosting (Heroku, Railway, etc.)
+```
+
+### Environment Variables
+
+Ensure these are set in production:
+
+```env
+DATABASE_URL=<production-database-url>
+JWT_SECRET=<strong-secret-key>
+NODE_ENV=production
+PORT=5000
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## 👥 Team & Credits
+
+<div align="center">
+
+**Developed for Auto Fleet**  
+*Modern Car Rental Management System for Tunisia*
+
+### Built With ❤️ Using
+
+HTML5 • CSS3 • JavaScript • TypeScript • React • Node.js • Express • PostgreSQL • Prisma
+
+---
+
+### 📧 Contact & Support
+
+For questions, issues, or suggestions:
+- 📫 Email: support@autofleet.tn
+- 🐛 Issues: [GitHub Issues](https://github.com/your-repo/issues)
+- 📚 Documentation: [Documentation Folder](./Documentation/)
+
+---
+
+**⭐ If you find this project helpful, please give it a star!**
+
+</div>
